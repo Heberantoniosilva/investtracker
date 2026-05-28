@@ -541,7 +541,7 @@ async function fetchQuotes(){
   document.getElementById('last-update').textContent='buscando...';
   try{
     // Busca dólar primeiro
-    const dolarText=await callAPI('Qual a cotação atual do USD/BRL? Responda APENAS em JSON puro sem markdown: {"usdBRL":5.80}',apiKey);
+    const dolarText=await callAPI('Você é um assistente financeiro. Qual o valor mais recente que você conhece do câmbio USD/BRL? Responda APENAS em JSON puro sem markdown, sem explicações: {"usdBRL":5.80}',apiKey);
     const dolarData=JSON.parse(dolarText);
     if(dolarData.usdBRL)S.dolar=dolarData.usdBRL;
 
@@ -551,7 +551,7 @@ async function fetchQuotes(){
     for(let i=0;i<tickers.length;i+=batchSize){
       const batch=tickers.slice(i,i+batchSize);
       document.getElementById('last-update').textContent=`buscando ${i+1}-${Math.min(i+batchSize,tickers.length)} de ${tickers.length}...`;
-      const prompt=`Cotações atuais NYSE/NASDAQ em USD para: ${batch.join(', ')}. Responda APENAS em JSON puro sem markdown: {"quotes":{"AAPL":195.50}}`;
+      const prompt=`Você é um assistente financeiro. Liste os preços mais recentes que você conhece em USD para estas ações: ${batch.join(', ')}. Use seus dados de treinamento mais recentes. Responda APENAS em JSON puro sem markdown, sem explicações: {"quotes":{"AAPL":195.50,"NVDA":130.00}}`;
       try{
         const text=await callAPI(prompt,apiKey);
         const parsed=JSON.parse(text);
