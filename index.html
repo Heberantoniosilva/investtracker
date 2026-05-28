@@ -521,44 +521,41 @@ function getPositions(){
   return Object.values(pos).filter(p=>p.totalQty>0.000001);
 }
 
-async function callAPI(prompt, apiKey){
-  const resp=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','anthropic-version':'2023-06-01','x-api-key':apiKey},
-    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:800,messages:[{role:'user',content:prompt}]})
-  });
-  const data=await resp.json();
-  const text=data.content?.find(c=>c.type==='text')?.text||'{}';
-  return text.replace(/```json|```/g,'').trim();
-}
-
 async function fetchQuotes(){
   const positions=getPositions();
   const tickers=[...new Set(positions.map(p=>p.ticker))];
   if(!tickers.length){toast('Nenhuma posição para buscar cotações.');return;}
-  const apiKey=localStorage.getItem('it_apikey')||'';
-  if(!apiKey){toast('Configure sua API key na aba Config primeiro!');return;}
   document.getElementById('last-update').textContent='buscando...';
+  
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  
   try{
-    // Busca dólar primeiro
-    const dolarText=await callAPI('Você é um assistente financeiro. Qual o valor mais recente que você conhece do câmbio USD/BRL? Responda APENAS em JSON puro sem markdown, sem explicações: {"usdBRL":5.80}',apiKey);
-    const dolarData=JSON.parse(dolarText);
-    if(dolarData.usdBRL)S.dolar=dolarData.usdBRL;
-
-    // Divide tickers em lotes de 10 com pausa entre chamadas
+    // Busca cotações via Yahoo Finance (proxy público)
     const batchSize=10;
-    const sleep=ms=>new Promise(r=>setTimeout(r,ms));
     for(let i=0;i<tickers.length;i+=batchSize){
       const batch=tickers.slice(i,i+batchSize);
       document.getElementById('last-update').textContent=`buscando ${i+1}-${Math.min(i+batchSize,tickers.length)} de ${tickers.length}...`;
-      const prompt=`Você é um assistente financeiro. Liste os preços mais recentes que você conhece em USD para estas ações: ${batch.join(', ')}. Use seus dados de treinamento mais recentes. Responda APENAS em JSON puro sem markdown, sem explicações: {"quotes":{"AAPL":195.50,"NVDA":130.00}}`;
       try{
-        const text=await callAPI(prompt,apiKey);
-        const parsed=JSON.parse(text);
-        if(parsed.quotes){for(const[t,v]of Object.entries(parsed.quotes)){if(v)S.quotes[t.toUpperCase()]=v;}}
-      }catch(e){console.warn('Erro lote',i,e);}
-      if(i+batchSize<tickers.length) await sleep(3000);
+        const symbols=batch.join(',');
+        const url=`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice&lang=en-US&region=US`;
+        const resp=await fetch(url,{headers:{'Accept':'application/json'}});
+        const data=await resp.json();
+        const quotes=data?.quoteResponse?.result||[];
+        for(const q of quotes){
+          if(q.regularMarketPrice) S.quotes[q.symbol.toUpperCase()]=q.regularMarketPrice;
+        }
+      }catch(e){console.warn('Erro lote Yahoo',i,e);}
+      if(i+batchSize<tickers.length) await sleep(500);
     }
+    
+    // Busca USD/BRL
+    try{
+      const resp=await fetch('https://query1.finance.yahoo.com/v7/finance/quote?symbols=BRL=X&fields=regularMarketPrice&lang=en-US&region=US',{headers:{'Accept':'application/json'}});
+      const data=await resp.json();
+      const rate=data?.quoteResponse?.result?.[0]?.regularMarketPrice;
+      if(rate) S.dolar=rate;
+    }catch(e){console.warn('Erro USD/BRL',e);}
+    
     S.lastUpdate=new Date().toISOString();
     save();
     toast('Cotações atualizadas!');
