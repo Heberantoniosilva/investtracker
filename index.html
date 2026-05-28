@@ -526,42 +526,48 @@ async function fetchQuotes(){
   const tickers=[...new Set(positions.map(p=>p.ticker))];
   if(!tickers.length){toast('Nenhuma posição para buscar cotações.');return;}
   document.getElementById('last-update').textContent='buscando...';
-  
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  
+
+  // Tenta múltiplas fontes em cascata
+  async function fetchPrice(ticker){
+    // Fonte 1: Yahoo Finance via allorigins proxy
+    try{
+      const url=`https://api.allorigins.win/get?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`)}`;
+      const r=await fetch(url);
+      const d=await r.json();
+      const parsed=JSON.parse(d.contents);
+      const price=parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+      if(price&&price>0)return price;
+    }catch(e){}
+    // Fonte 2: Yahoo Finance via corsproxy
+    try{
+      const url=`https://corsproxy.io/?${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`)}`;
+      const r=await fetch(url);
+      const parsed=await r.json();
+      const price=parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+      if(price&&price>0)return price;
+    }catch(e){}
+    return null;
+  }
+
   try{
-    // Busca cotações via Yahoo Finance (proxy público)
-    const batchSize=10;
-    for(let i=0;i<tickers.length;i+=batchSize){
-      const batch=tickers.slice(i,i+batchSize);
-      document.getElementById('last-update').textContent=`buscando ${i+1}-${Math.min(i+batchSize,tickers.length)} de ${tickers.length}...`;
-      try{
-        const symbols=batch.join(',');
-        const url=`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice&lang=en-US&region=US`;
-        const resp=await fetch(url,{headers:{'Accept':'application/json'}});
-        const data=await resp.json();
-        const quotes=data?.quoteResponse?.result||[];
-        for(const q of quotes){
-          if(q.regularMarketPrice) S.quotes[q.symbol.toUpperCase()]=q.regularMarketPrice;
-        }
-      }catch(e){console.warn('Erro lote Yahoo',i,e);}
-      if(i+batchSize<tickers.length) await sleep(500);
+    let fetched=0;
+    for(const ticker of tickers){
+      document.getElementById('last-update').textContent=`buscando ${++fetched}/${tickers.length}: ${ticker}...`;
+      const price=await fetchPrice(ticker);
+      if(price)S.quotes[ticker.toUpperCase()]=price;
+      await sleep(200);
     }
-    
     // Busca USD/BRL
     try{
-      const resp=await fetch('https://query1.finance.yahoo.com/v7/finance/quote?symbols=BRL=X&fields=regularMarketPrice&lang=en-US&region=US',{headers:{'Accept':'application/json'}});
-      const data=await resp.json();
-      const rate=data?.quoteResponse?.result?.[0]?.regularMarketPrice;
-      if(rate) S.dolar=rate;
-    }catch(e){console.warn('Erro USD/BRL',e);}
-    
+      const dolar=await fetchPrice('BRL=X');
+      if(dolar)S.dolar=dolar;
+    }catch(e){}
     S.lastUpdate=new Date().toISOString();
     save();
     toast('Cotações atualizadas!');
   }catch(e){
-    console.warn('Erro cotações:',e);
-    toast('Erro ao buscar cotações: '+e.message);
+    toast('Erro: '+e.message);
   }
   document.getElementById('last-update').textContent='atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   renderAll();
