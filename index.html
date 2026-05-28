@@ -557,7 +557,7 @@ async function fetchQuotes(){
         const parsed=JSON.parse(text);
         if(parsed.quotes){for(const[t,v]of Object.entries(parsed.quotes)){if(v)S.quotes[t.toUpperCase()]=v;}}
       }catch(e){console.warn('Erro lote',i,e);}
-      if(i+batchSize<tickers.length) await sleep(1500);
+      if(i+batchSize<tickers.length) await sleep(3000);
     }
     S.lastUpdate=new Date().toISOString();
     save();
