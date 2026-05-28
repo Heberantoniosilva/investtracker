@@ -104,7 +104,9 @@ input:focus,select:focus{border-color:var(--acc2)}
         <div class="section-title" style="margin:0"><i class="ti ti-chart-pie"></i> Visão Geral</div>
         <div style="display:flex;gap:8px;align-items:center">
           <span id="last-update" class="chip">sem cotações</span>
-          <button class="btn btn-sm btn-primary" onclick="fetchQuotes()"><i class="ti ti-refresh"></i> Atualizar Cotações</button>
+          <button class="btn btn-sm" onclick="fetchQuotesByType('ETF')" style="background:#1e3a5f;border-color:#5ba4cf;color:#5ba4cf"><i class="ti ti-refresh"></i> ETFs</button>
+          <button class="btn btn-sm" onclick="fetchQuotesByType('Stock')" style="background:#1e3a2f;border-color:#3fb950;color:#3fb950"><i class="ti ti-refresh"></i> Stocks</button>
+          <button class="btn btn-sm btn-primary" onclick="fetchQuotes()"><i class="ti ti-refresh"></i> Todos</button>
         </div>
       </div>
       <div class="grid-4">
@@ -521,57 +523,47 @@ function getPositions(){
   return Object.values(pos).filter(p=>p.totalQty>0.000001);
 }
 
-async function fetchQuotes(){
-  const positions=getPositions();
-  const tickers=[...new Set(positions.map(p=>p.ticker))];
-  if(!tickers.length){toast('Nenhuma posição para buscar cotações.');return;}
-  document.getElementById('last-update').textContent='buscando...';
-  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-
-  // Tenta múltiplas fontes em cascata
-  async function fetchPrice(ticker){
-    // Fonte 1: Yahoo Finance via allorigins proxy
-    try{
-      const url=`https://api.allorigins.win/get?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`)}`;
-      const r=await fetch(url);
-      const d=await r.json();
-      const parsed=JSON.parse(d.contents);
-      const price=parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
-      if(price&&price>0)return price;
-    }catch(e){}
-    // Fonte 2: Yahoo Finance via corsproxy
-    try{
-      const url=`https://corsproxy.io/?${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`)}`;
-      const r=await fetch(url);
-      const parsed=await r.json();
-      const price=parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
-      if(price&&price>0)return price;
-    }catch(e){}
-    return null;
-  }
-
+async function fetchPrice(ticker){
   try{
-    let fetched=0;
-    for(const ticker of tickers){
-      document.getElementById('last-update').textContent=`buscando ${++fetched}/${tickers.length}: ${ticker}...`;
-      const price=await fetchPrice(ticker);
-      if(price)S.quotes[ticker.toUpperCase()]=price;
-      await sleep(200);
-    }
-    // Busca USD/BRL
-    try{
-      const dolar=await fetchPrice('BRL=X');
-      if(dolar)S.dolar=dolar;
-    }catch(e){}
-    S.lastUpdate=new Date().toISOString();
-    save();
-    toast('Cotações atualizadas!');
-  }catch(e){
-    toast('Erro: '+e.message);
+    const url=`https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range=1d')}`;
+    const r=await fetch(url);const d=await r.json();
+    const parsed=JSON.parse(d.contents);
+    const price=parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    if(price&&price>0)return price;
+  }catch(e){}
+  try{
+    const url=`https://corsproxy.io/?${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range=1d')}`;
+    const r=await fetch(url);const parsed=await r.json();
+    const price=parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    if(price&&price>0)return price;
+  }catch(e){}
+  return null;
+}
+
+async function fetchQuotesByType(type){
+  const positions=getPositions().filter(p=>!type||p.type===type);
+  const tickers=[...new Set(positions.map(p=>p.ticker))];
+  if(!tickers.length){toast('Sem posições para atualizar.');return;}
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const label=type||'todos';
+  document.getElementById('last-update').textContent=`buscando ${label}...`;
+  let fetched=0;
+  for(const ticker of tickers){
+    document.getElementById('last-update').textContent=`${label}: ${++fetched}/${tickers.length} — ${ticker}...`;
+    const price=await fetchPrice(ticker);
+    if(price)S.quotes[ticker.toUpperCase()]=price;
+    await sleep(300);
   }
+  if(!type){
+    try{const d=await fetchPrice('BRL=X');if(d)S.dolar=d;}catch(e){}
+  }
+  S.lastUpdate=new Date().toISOString();save();
+  toast(`${tickers.length} ${label} atualizados!`);
   document.getElementById('last-update').textContent='atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   renderAll();
 }
+
+async function fetchQuotes(){await fetchQuotesByType(null);}
 
 function renderAll(){
   renderDashboard();renderPortfolio();renderEntries();
