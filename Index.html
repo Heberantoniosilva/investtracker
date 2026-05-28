@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="InvestTracker">
+<title>InvestTracker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#f8f9fa;--text2:#adb5bd;--green:#06d6a0;--red:#ef476f;--amber:#ffd166;--acc2:#00b4d8}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:16px;font-weight:600;color:var(--acc2);display:flex;align-items:center;gap:8px}
+.nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:2px}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{background:transparent;border:none;color:var(--text2);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap;transition:.15s}
+.nav-btn.active{background:var(--acc2);color:#000;font-weight:500}
+.nav-btn:hover:not(.active){background:var(--border);color:var(--text)}
+.content{flex:1;padding:16px;max-width:1200px;width:100%;margin:0 auto}
+.page{display:none}.page.active{display:block}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:600;color:var(--text)}
+.stat-sub{font-size:12px;color:var(--text2);margin-top:4px}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.section-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 10px;color:var(--text2);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)}
+td{padding:8px 10px;border-bottom:1px solid #21262d;color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
+.badge-etf{background:#1e3a5f;color:#5ba4cf}
+.badge-stock{background:#1e3a2f;color:#3fb950}
+.badge-avenue{background:#2d1e3a;color:#bc8cff}
+.badge-nomad{background:#3a2e1e;color:#d29922}
+.btn{background:transparent;border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:13px;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--border)}
+.btn-primary{background:var(--acc2);border-color:var(--acc2);color:#000;font-weight:500}
+.btn-primary:hover{opacity:.9}
+.btn-danger{background:#ef476f;border-color:#ef476f;color:#fff}
+.btn-sm{padding:4px 10px;font-size:12px}
+input,select{background:#0d1117;border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:13px;width:100%;outline:none;transition:.15s}
+input:focus,select:focus{border-color:var(--acc2)}
+.form-group{margin-bottom:12px}
+.form-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:500;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.close-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:22px;line-height:1}
+.close-btn:hover{color:var(--text)}
+.progress-bar{height:6px;background:#21262d;border-radius:3px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:3px}
+.ticker-sym{font-weight:600;color:var(--acc2);font-size:13px}
+.loading{color:var(--text2);font-size:12px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.empty{text-align:center;padding:40px;color:var(--text2)}
+.rank-num{font-size:14px;font-weight:600;color:var(--text2);min-width:24px}
+.rank-1 .rank-num{color:#ffd700}
+.rank-2 .rank-num{color:#c0c0c0}
+.rank-3 .rank-num{color:#cd7f32}
+.tabs{display:flex;gap:16px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{background:none;border:none;color:var(--text2);padding:6px 0 10px;cursor:pointer;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab-btn.active{color:var(--acc2);border-bottom-color:var(--acc2)}
+.alert-info{background:#1e3a5f;border:1px solid #2d5a8e;color:#7bb8f5;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.chip{background:#21262d;border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--text2)}
+.br-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:12px}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.ai-badge{background:#764ba2;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500}
+#toast{position:fixed;bottom:24px;right:24px;background:#06d6a0;color:#000;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;display:none;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div class="app">
+  <div class="header">
+    <div class="logo"><i class="ti ti-trending-up"></i> InvestTracker</div>
+    <div class="nav">
+      <button class="nav-btn active" onclick="showPage('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+      <button class="nav-btn" onclick="showPage('portfolio',this)"><i class="ti ti-briefcase"></i> Carteira</button>
+      <button class="nav-btn" onclick="showPage('entries',this)"><i class="ti ti-plus"></i> Lançamentos</button>
+      <button class="nav-btn" onclick="showPage('ranking',this)"><i class="ti ti-trophy"></i> Ranking</button>
+      <button class="nav-btn" onclick="showPage('dividends',this)"><i class="ti ti-coin"></i> Dividendos</button>
+      <button class="nav-btn" onclick="showPage('consolidated',this)"><i class="ti ti-world"></i> Consolidado</button>
+      <button class="nav-btn" onclick="showPage('config',this)"><i class="ti ti-settings"></i> Config</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="flex-between" style="margin-bottom:16px">
+        <div class="section-title" style="margin:0"><i class="ti ti-chart-pie"></i> Visão Geral</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="last-update" class="chip">sem cotações</span>
+          <button class="btn btn-sm btn-primary" onclick="fetchQuotes()"><i class="ti ti-refresh"></i> Atualizar Cotações</button>
+        </div>
+      </div>
+      <div class="grid-4">
+        <div class="stat-card"><div class="stat-label">Total Investido (USD)</div><div class="stat-value" id="d-invested">—</div><div class="stat-sub" id="d-invested-brl">— BRL</div></div>
+        <div class="stat-card"><div class="stat-label">Valor Atual (USD)</div><div class="stat-value" id="d-current">—</div><div class="stat-sub" id="d-current-brl">— BRL</div></div>
+        <div class="stat-card"><div class="stat-label">Lucro / Prejuízo</div><div class="stat-value" id="d-pnl">—</div><div class="stat-sub" id="d-pnl-brl">— BRL</div></div>
+        <div class="stat-card"><div class="stat-label">Retorno Total</div><div class="stat-value" id="d-ret">—</div><div class="stat-sub">USD/BRL: <span id="d-dolar-val">—</span></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="card">
+          <div class="section-title"><i class="ti ti-building-bank"></i> Por Corretora</div>
+          <div id="broker-breakdown"><div class="loading">Aguardando cotações...</div></div>
+        </div>
+        <div class="card">
+          <div class="section-title"><i class="ti ti-chart-donut"></i> Stock vs ETF</div>
+          <div id="type-breakdown"><div class="loading">Aguardando cotações...</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:auto">
+        <div style="padding:16px 16px 8px"><div class="section-title" style="margin:0"><i class="ti ti-trending-up"></i> Posições</div></div>
+        <table>
+          <thead><tr><th>#</th><th>Ticker</th><th>Corretora</th><th>Tipo</th><th>Qtd</th><th>P. Médio</th><th>Cotação</th><th>Investido</th><th>Atual</th><th>L/P</th><th>Retorno</th></tr></thead>
+          <tbody id="top-table"><tr><td colspan="11" style="text-align:center;padding:24px;color:var(--text2)">Clique em "Atualizar Cotações" para carregar os dados</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CARTEIRA -->
+    <div id="page-portfolio" class="page">
+      <div class="flex-between" style="margin-bottom:16px">
+        <div class="section-title" style="margin:0"><i class="ti ti-briefcase"></i> Posições Líquidas</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="search-ticker" placeholder="Buscar ticker..." style="width:150px" oninput="renderPortfolio()">
+          <select id="filter-broker" onchange="renderPortfolio()" style="width:120px">
+            <option value="">Todas corretoras</option>
+            <option>Avenue</option>
+            <option>Nomad</option>
+          </select>
+          <select id="filter-type" onchange="renderPortfolio()" style="width:110px">
+            <option value="">Todos tipos</option>
+            <option>Stock</option>
+            <option>ETF</option>
+          </select>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:auto">
+        <table>
+          <thead><tr><th>Ticker</th><th>Corretora</th><th>Tipo</th><th>Qtd</th><th>P. Médio (USD)</th><th>Cotação</th><th>Investido</th><th>Atual (USD)</th><th>L/P (USD)</th><th>Retorno %</th><th>% Carteira</th></tr></thead>
+          <tbody id="portfolio-table"><tr><td colspan="11" class="empty">Calculando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LANÇAMENTOS -->
+    <div id="page-entries" class="page">
+      <div class="flex-between" style="margin-bottom:16px">
+        <div class="section-title" style="margin:0"><i class="ti ti-list"></i> Lançamentos</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="openModal('modal-buy')"><i class="ti ti-plus"></i> Nova Compra</button>
+          <button class="btn" onclick="openModal('modal-sell')"><i class="ti ti-minus"></i> Registrar Venda</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('tab-buys',this)">Compras (<span id="buys-count">0</span>)</button>
+        <button class="tab-btn" onclick="showTab('tab-sells',this)">Vendas (<span id="sells-count">0</span>)</button>
+      </div>
+      <div id="tab-buys" class="card" style="padding:0;overflow:auto">
+        <table>
+          <thead><tr><th>Data</th><th>Ticker</th><th>Corretora</th><th>Tipo</th><th>Quantidade</th><th>Preço (USD)</th><th>Total (USD)</th><th></th></tr></thead>
+          <tbody id="buys-table"><tr><td colspan="8" class="empty">Nenhuma compra lançada</td></tr></tbody>
+        </table>
+      </div>
+      <div id="tab-sells" class="card" style="padding:0;overflow:auto;display:none">
+        <table>
+          <thead><tr><th>Data</th><th>Ticker</th><th>Corretora</th><th>Qtd Vendida</th><th>Preço Venda</th><th>Custo Médio</th><th>Receita</th><th>L/P</th><th>Retorno</th></tr></thead>
+          <tbody id="sells-table"><tr><td colspan="9" class="empty">Nenhuma venda registrada</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RANKING -->
+    <div id="page-ranking" class="page">
+      <div class="section-title"><i class="ti ti-trophy"></i> Ranking de Ativos</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="card">
+          <div class="section-title" style="font-size:13px;color:var(--green)"><i class="ti ti-arrow-up"></i> Melhores Retornos</div>
+          <div id="rank-best"><div class="loading">Aguardando cotações...</div></div>
+        </div>
+        <div class="card">
+          <div class="section-title" style="font-size:13px;color:var(--red)"><i class="ti ti-arrow-down"></i> Piores Retornos</div>
+          <div id="rank-worst"><div class="loading">Aguardando cotações...</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:auto">
+        <div style="padding:16px 16px 8px"><div class="section-title" style="margin:0"><i class="ti ti-list"></i> Ranking Geral</div></div>
+        <table>
+          <thead><tr><th>#</th><th>Ticker</th><th>Tipo</th><th>Lotes</th><th>Qtd Total</th><th>P. Médio</th><th>Cotação</th><th>Retorno %</th></tr></thead>
+          <tbody id="rank-table"><tr><td colspan="8" class="empty">Aguardando cotações...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DIVIDENDOS -->
+    <div id="page-dividends" class="page">
+      <div class="flex-between" style="margin-bottom:16px">
+        <div class="section-title" style="margin:0"><i class="ti ti-coin"></i> Dividendos e Proventos</div>
+        <button class="btn btn-primary" onclick="openModal('modal-div')"><i class="ti ti-plus"></i> Novo Provento</button>
+      </div>
+      <div class="grid-4" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card"><div class="stat-label">Total Recebido (USD)</div><div class="stat-value" id="div-total">$0.00</div></div>
+        <div class="stat-card"><div class="stat-label">Total Recebido (BRL)</div><div class="stat-value" id="div-total-brl">R$ 0,00</div></div>
+        <div class="stat-card"><div class="stat-label">Nº de Pagamentos</div><div class="stat-value" id="div-count">0</div></div>
+      </div>
+      <div class="card" style="padding:0;overflow:auto">
+        <table>
+          <thead><tr><th>Data</th><th>Ticker</th><th>Corretora</th><th>Tipo</th><th>Valor (USD)</th><th>Cotação USD</th><th>Valor (BRL)</th><th></th></tr></thead>
+          <tbody id="div-table"><tr><td colspan="8" class="empty">Nenhum provento lançado</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONSOLIDADO -->
+    <div id="page-consolidated" class="page">
+      <div class="section-title"><i class="ti ti-world"></i> Patrimônio Consolidado</div>
+      <div class="alert-info"><i class="ti ti-info-circle"></i> NYSE atualiza automaticamente. Tesouro Direto e Toro: preencha manualmente consultando os apps.</div>
+      <div class="br-card">
+        <div class="section-title" style="font-size:14px">🇺🇸 Carteira NYSE (Avenue + Nomad)</div>
+        <div class="grid-4">
+          <div class="stat-card"><div class="stat-label">Investido (BRL)</div><div class="stat-value" id="nyse-inv-brl">—</div></div>
+          <div class="stat-card"><div class="stat-label">Atual (BRL)</div><div class="stat-value" id="nyse-cur-brl">—</div></div>
+          <div class="stat-card"><div class="stat-label">L/P (BRL)</div><div class="stat-value" id="nyse-pnl-brl">—</div></div>
+          <div class="stat-card"><div class="stat-label">Retorno</div><div class="stat-value" id="nyse-ret">—</div></div>
+        </div>
+      </div>
+      <div class="br-card">
+        <div class="section-title" style="font-size:14px">🏦 Tesouro Direto</div>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>Título</th><th>Investido (R$)</th><th>Saldo Atual (R$)</th><th>Vencimento</th><th></th></tr></thead>
+            <tbody id="td-table"><tr><td colspan="5" class="empty">Nenhum título cadastrado</td></tr></tbody>
+          </table>
+        </div>
+        <button class="btn btn-sm" style="margin-top:12px" onclick="openModal('modal-td')"><i class="ti ti-plus"></i> Adicionar Título</button>
+      </div>
+      <div class="br-card">
+        <div class="section-title" style="font-size:14px">🏛️ Toro (Santander)</div>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>Produto</th><th>Investido (R$)</th><th>Saldo Atual (R$)</th><th>Tipo</th><th></th></tr></thead>
+            <tbody id="toro-table"><tr><td colspan="5" class="empty">Nenhum produto cadastrado</td></tr></tbody>
+          </table>
+        </div>
+        <button class="btn btn-sm" style="margin-top:12px" onclick="openModal('modal-toro')"><i class="ti ti-plus"></i> Adicionar Produto</button>
+      </div>
+      <div class="br-card">
+        <div class="section-title" style="font-size:14px">📊 Patrimônio Total Consolidado</div>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>Carteira</th><th>Investido (R$)</th><th>Saldo Atual (R$)</th><th>L/P (R$)</th><th>% do Total</th></tr></thead>
+            <tbody id="consol-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="page-config" class="page">
+      <div class="section-title"><i class="ti ti-settings"></i> Configurações</div>
+      <div class="card" style="max-width:500px;margin-bottom:16px">
+        <div class="section-title" style="font-size:13px"><i class="ti ti-currency-dollar"></i> Câmbio e Cotações</div>
+        <div class="form-group">
+          <label class="form-label">Chave de API Anthropic (obrigatória) *</label>
+          <input type="password" id="cfg-apikey" placeholder="sk-ant-api03-...">
+          <div style="font-size:11px;color:var(--text2);margin-top:4px">Necessária para buscar cotações. Obtenha em <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--acc2)">console.anthropic.com</a>. Salva localmente no seu browser.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cotação USD/BRL (manual)</label>
+          <input type="number" id="cfg-dolar" step="0.01" placeholder="ex: 5.80">
+          <div style="font-size:11px;color:var(--text2);margin-top:4px">Deixe em branco para buscar automaticamente ao atualizar cotações</div>
+        </div>
+        <button class="btn btn-primary" onclick="saveConfig()"><i class="ti ti-check"></i> Salvar</button>
+      </div>
+      <div class="card" style="max-width:500px;margin-bottom:16px">
+        <div class="section-title" style="font-size:13px"><i class="ti ti-database"></i> Backup de Dados</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">Todos os seus dados ficam salvos localmente neste navegador. Exporte regularmente como backup.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" onclick="exportData()"><i class="ti ti-download"></i> Exportar JSON</button>
+          <button class="btn" onclick="document.getElementById('import-file').click()"><i class="ti ti-upload"></i> Importar JSON</button>
+        </div>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+      <div class="card" style="max-width:500px;margin-bottom:16px">
+        <div class="section-title" style="font-size:13px"><i class="ti ti-robot"></i> Cotações via <span class="ai-badge">AI</span></div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6">As cotações são obtidas através da API do Claude (Anthropic). Clique em "Atualizar Cotações" no Dashboard para buscar os preços mais recentes. A chamada consome tokens da sua conta Claude.</div>
+      </div>
+      <div class="card" style="max-width:500px">
+        <div class="section-title" style="font-size:13px;color:var(--red)"><i class="ti ti-alert-triangle"></i> Zona de Perigo</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Esta ação apaga todos os dados e não pode ser desfeita. Exporte um backup antes.</div>
+        <button class="btn btn-danger btn-sm" onclick="if(confirm('Tem certeza? Esta ação apaga TODOS os dados permanentemente.'))clearAll()"><i class="ti ti-trash"></i> Limpar todos os dados</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAIS -->
+<div class="modal-overlay" id="modal-buy">
+  <div class="modal">
+    <div class="modal-title">Nova Compra <button class="close-btn" onclick="closeModal('modal-buy')">×</button></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Data *</label><input type="date" id="buy-date"></div>
+      <div class="form-group"><label class="form-label">Ticker *</label><input type="text" id="buy-ticker" placeholder="AAPL" style="text-transform:uppercase"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Corretora</label><select id="buy-broker"><option>Avenue</option><option>Nomad</option></select></div>
+      <div class="form-group"><label class="form-label">Tipo</label><select id="buy-type"><option>Stock</option><option>ETF</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Quantidade *</label><input type="number" id="buy-qty" step="0.000001" placeholder="1.000000"></div>
+      <div class="form-group"><label class="form-label">Preço Unitário (USD) *</label><input type="number" id="buy-price" step="0.01" placeholder="150.00"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-primary" onclick="addBuy()"><i class="ti ti-check"></i> Salvar Compra</button>
+      <button class="btn" onclick="closeModal('modal-buy')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-sell">
+  <div class="modal">
+    <div class="modal-title">Registrar Venda <button class="close-btn" onclick="closeModal('modal-sell')">×</button></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Data *</label><input type="date" id="sell-date"></div>
+      <div class="form-group"><label class="form-label">Ticker *</label><select id="sell-ticker"></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Corretora</label><select id="sell-broker"><option>Avenue</option><option>Nomad</option></select></div>
+      <div class="form-group"><label class="form-label">Qtd Vendida *</label><input type="number" id="sell-qty" step="0.000001"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Preço de Venda (USD) *</label><input type="number" id="sell-price" step="0.01"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-primary" onclick="addSell()"><i class="ti ti-check"></i> Registrar Venda</button>
+      <button class="btn" onclick="closeModal('modal-sell')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-div">
+  <div class="modal">
+    <div class="modal-title">Novo Provento <button class="close-btn" onclick="closeModal('modal-div')">×</button></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Data *</label><input type="date" id="div-date"></div>
+      <div class="form-group"><label class="form-label">Ticker *</label><input type="text" id="div-ticker" placeholder="AAPL" style="text-transform:uppercase"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Corretora</label><select id="div-broker"><option>Avenue</option><option>Nomad</option></select></div>
+      <div class="form-group"><label class="form-label">Tipo</label><select id="div-type-sel"><option>Dividendo</option><option>JCP</option><option>Cupom Tesouro</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Valor Recebido (USD) *</label><input type="number" id="div-usd" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Cotação USD/BRL na data</label><input type="number" id="div-rate" step="0.01" placeholder="5.80"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-primary" onclick="addDiv()"><i class="ti ti-check"></i> Salvar</button>
+      <button class="btn" onclick="closeModal('modal-div')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-td">
+  <div class="modal">
+    <div class="modal-title">Tesouro Direto <button class="close-btn" onclick="closeModal('modal-td')">×</button></div>
+    <div class="form-group"><label class="form-label">Título *</label><input type="text" id="td-titulo" placeholder="Tesouro Selic 2029"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Investido (R$) *</label><input type="number" id="td-inv" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Saldo Atual (R$) *</label><input type="number" id="td-atual" step="0.01"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Vencimento</label><input type="date" id="td-venc"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-primary" onclick="addTD()"><i class="ti ti-check"></i> Salvar</button>
+      <button class="btn" onclick="closeModal('modal-td')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-toro">
+  <div class="modal">
+    <div class="modal-title">Toro / Santander <button class="close-btn" onclick="closeModal('modal-toro')">×</button></div>
+    <div class="form-group"><label class="form-label">Produto *</label><input type="text" id="toro-prod" placeholder="CDB Santander 110% CDI"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Investido (R$) *</label><input type="number" id="toro-inv" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Saldo Atual (R$) *</label><input type="number" id="toro-atual" step="0.01"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Tipo</label><input type="text" id="toro-tipo" placeholder="CDB, LCI, LCA..."></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-primary" onclick="addToro()"><i class="ti ti-check"></i> Salvar</button>
+      <button class="btn" onclick="closeModal('modal-toro')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const INITIAL_BUYS=[
+  {id:1,date:'2025-01-10',ticker:'AAPL',broker:'Avenue',type:'Stock',qty:0.78181,price:255.82},
+  {id:2,date:'2025-10-23',ticker:'AAPL',broker:'Avenue',type:'Stock',qty:1.54291,price:259.25},
+  {id:3,date:'2025-01-10',ticker:'AMD',broker:'Avenue',type:'Stock',qty:0.6535,price:153.02},
+  {id:4,date:'2025-01-10',ticker:'AVGO',broker:'Avenue',type:'Stock',qty:1.52742,price:327.35},
+  {id:5,date:'2025-10-23',ticker:'AVGO',broker:'Avenue',type:'Stock',qty:1.15999,price:344.83},
+  {id:6,date:'2025-01-10',ticker:'C',broker:'Avenue',type:'Stock',qty:4.1242,price:93.91},
+  {id:7,date:'2025-01-10',ticker:'GE',broker:'Avenue',type:'Stock',qty:1.78478,price:267.80},
+  {id:8,date:'2025-01-10',ticker:'IAI',broker:'Avenue',type:'ETF',qty:1.15061,price:173.82},
+  {id:9,date:'2025-01-10',ticker:'IBIT',broker:'Avenue',type:'ETF',qty:3.02411,price:66.14},
+  {id:10,date:'2025-01-10',ticker:'ITA',broker:'Avenue',type:'ETF',qty:3.33077,price:206.74},
+  {id:11,date:'2025-10-23',ticker:'ITA',broker:'Avenue',type:'Stock',qty:1.395939,price:214.91},
+  {id:12,date:'2025-01-10',ticker:'IVV',broker:'Avenue',type:'ETF',qty:0.4687,price:681.71},
+  {id:13,date:'2025-01-10',ticker:'MSFT',broker:'Avenue',type:'Stock',qty:0.76972,price:516.00},
+  {id:14,date:'2025-01-10',ticker:'NFLX',broker:'Avenue',type:'Stock',qty:1.6144,price:123.88},
+  {id:15,date:'2025-01-10',ticker:'NVDA',broker:'Avenue',type:'Stock',qty:1.66687,price:179.98},
+  {id:16,date:'2025-01-10',ticker:'ORCL',broker:'Avenue',type:'Stock',qty:1.65231,price:302.61},
+  {id:17,date:'2025-01-10',ticker:'PLTR',broker:'Avenue',type:'Stock',qty:1.5586,price:160.40},
+  {id:18,date:'2025-01-10',ticker:'QQQ',broker:'Avenue',type:'ETF',qty:0.60559,price:576.18},
+  {id:19,date:'2025-10-23',ticker:'QQQ',broker:'Avenue',type:'Stock',qty:0.25848,price:609.06},
+  {id:20,date:'2025-01-10',ticker:'SPOT',broker:'Avenue',type:'Stock',qty:0.27358,price:731.03},
+  {id:21,date:'2025-01-10',ticker:'TSLA',broker:'Avenue',type:'Stock',qty:0.43183,price:439.99},
+  {id:22,date:'2025-01-10',ticker:'TSM',broker:'Avenue',type:'Stock',qty:0.38334,price:260.86},
+  {id:23,date:'2025-01-10',ticker:'VST',broker:'Avenue',type:'Stock',qty:0.96567,price:207.11},
+  {id:24,date:'2025-01-10',ticker:'VXUS',broker:'Avenue',type:'ETF',qty:4.1048,price:73.09},
+  {id:25,date:'2025-10-23',ticker:'AAPL',broker:'Nomad',type:'Stock',qty:0.771936,price:259.09},
+  {id:26,date:'2025-09-29',ticker:'AMD',broker:'Nomad',type:'Stock',qty:1.852296,price:161.96},
+  {id:27,date:'2025-09-29',ticker:'ANET',broker:'Nomad',type:'Stock',qty:2.5235,price:118.88},
+  {id:28,date:'2025-10-23',ticker:'AVGO',broker:'Nomad',type:'Stock',qty:5.68272,price:345.00},
+  {id:29,date:'2025-09-29',ticker:'C',broker:'Nomad',type:'Stock',qty:7.68775,price:75.12},
+  {id:30,date:'2025-09-29',ticker:'COIN',broker:'Nomad',type:'Stock',qty:0.233967,price:427.41},
+  {id:31,date:'2025-09-29',ticker:'DT',broker:'Nomad',type:'Stock',qty:1.874892,price:53.34},
+  {id:32,date:'2025-09-29',ticker:'GE',broker:'Nomad',type:'Stock',qty:6.30975,price:233.15},
+  {id:33,date:'2025-10-23',ticker:'GS',broker:'Nomad',type:'Stock',qty:1.001196,price:698.63},
+  {id:34,date:'2025-09-29',ticker:'IAI',broker:'Nomad',type:'ETF',qty:10.653261,price:159.58},
+  {id:35,date:'2025-09-29',ticker:'IBIT',broker:'Nomad',type:'ETF',qty:6.115639,price:56.48},
+  {id:36,date:'2025-09-29',ticker:'ITA',broker:'Nomad',type:'ETF',qty:6.7738,price:181.92},
+  {id:37,date:'2025-09-29',ticker:'IVV',broker:'Nomad',type:'ETF',qty:2.024591,price:595.68},
+  {id:38,date:'2025-10-23',ticker:'IWM',broker:'Nomad',type:'ETF',qty:0.816743,price:244.88},
+  {id:39,date:'2025-09-29',ticker:'MMM',broker:'Nomad',type:'Stock',qty:2.494289,price:140.32},
+  {id:40,date:'2025-09-29',ticker:'MSFT',broker:'Nomad',type:'Stock',qty:1.47504,price:448.59},
+  {id:41,date:'2025-09-29',ticker:'MSTR',broker:'Nomad',type:'Stock',qty:0.248914,price:401.75},
+  {id:42,date:'2025-09-29',ticker:'NFLX',broker:'Nomad',type:'Stock',qty:18.012859,price:113.81},
+  {id:43,date:'2025-10-23',ticker:'NLR',broker:'Nomad',type:'ETF',qty:1.399107,price:142.95},
+  {id:44,date:'2025-09-29',ticker:'NVDA',broker:'Nomad',type:'Stock',qty:8.650088,price:152.14},
+  {id:45,date:'2025-09-29',ticker:'ORCL',broker:'Nomad',type:'Stock',qty:1.108096,price:270.73},
+  {id:46,date:'2025-09-29',ticker:'PLTR',broker:'Nomad',type:'Stock',qty:7.742981,price:141.77},
+  {id:47,date:'2025-09-29',ticker:'QQQ',broker:'Nomad',type:'ETF',qty:3.64326,price:527.00},
+  {id:48,date:'2025-09-29',ticker:'RBLX',broker:'Nomad',type:'Stock',qty:19.48671,price:76.39},
+  {id:49,date:'2025-09-29',ticker:'SPOT',broker:'Nomad',type:'Stock',qty:3.166782,price:644.96},
+  {id:50,date:'2025-09-29',ticker:'SPY',broker:'Nomad',type:'ETF',qty:2.034006,price:592.92},
+  {id:51,date:'2025-10-23',ticker:'TNA',broker:'Nomad',type:'ETF',qty:4.335686,price:47.20},
+  {id:52,date:'2025-09-29',ticker:'TSM',broker:'Nomad',type:'Stock',qty:2.487395,price:206.57},
+  {id:53,date:'2025-09-29',ticker:'V',broker:'Nomad',type:'Stock',qty:1.726602,price:321.51},
+  {id:54,date:'2025-09-29',ticker:'VOO',broker:'Nomad',type:'ETF',qty:2.386311,price:547.29},
+  {id:55,date:'2025-05-21',ticker:'VOO',broker:'Avenue',type:'ETF',qty:0.47833,price:120.00},
+  {id:56,date:'2025-09-29',ticker:'VST',broker:'Nomad',type:'Stock',qty:2.299455,price:173.95},
+  {id:57,date:'2025-09-29',ticker:'VXUS',broker:'Nomad',type:'ETF',qty:17.910377,price:65.89},
+  {id:58,date:'2025-09-29',ticker:'XLF',broker:'Nomad',type:'ETF',qty:10.061834,price:49.69},
+];
+
+let S={buys:[],sells:[],dividends:[],td:[],toro:[],quotes:{},dolar:5.80,lastUpdate:null};
+let nextId=1000;
+
+function load(){
+  try{
+    const saved=localStorage.getItem('investTracker_v2');
+    if(saved){const d=JSON.parse(saved);S={...S,...d};}
+    else{S.buys=INITIAL_BUYS.map(b=>({...b}));}
+  }catch(e){S.buys=INITIAL_BUYS.map(b=>({...b}));}
+}
+function save(){localStorage.setItem('investTracker_v2',JSON.stringify(S));}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.display='block';
+  setTimeout(()=>{t.style.display='none';},2500);
+}
+
+function fmt(n,dec=2,prefix='$'){
+  if(n===null||n===undefined||isNaN(n))return '—';
+  return prefix+Math.abs(n).toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+}
+function fmtBRL(n){
+  if(!n&&n!==0||isNaN(n))return '—';
+  return 'R$ '+Math.abs(n).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+function pct(n){
+  if(n===null||isNaN(n))return '—';
+  const c=n>=0?'pos':'neg';
+  return `<span class="${c}">${n>=0?'+':''}${n.toFixed(2)}%</span>`;
+}
+function clr(n){return n>=0?'pos':'neg';}
+function signFmt(n,fn){
+  if(n===null||isNaN(n))return '—';
+  return `<span class="${clr(n)}">${n>=0?'+':'−'}${fn(Math.abs(n))}</span>`;
+}
+
+function getPositions(){
+  const pos={};
+  for(const b of S.buys){
+    const k=b.ticker.toUpperCase()+'|'+b.broker;
+    if(!pos[k])pos[k]={ticker:b.ticker.toUpperCase(),broker:b.broker,type:b.type,lots:[],totalQty:0,totalCost:0};
+    pos[k].lots.push(b);
+    pos[k].totalQty+=b.qty;
+    pos[k].totalCost+=b.qty*b.price;
+  }
+  for(const s of S.sells){
+    const k=s.ticker.toUpperCase()+'|'+s.broker;
+    if(pos[k])pos[k].totalQty-=s.qty;
+  }
+  return Object.values(pos).filter(p=>p.totalQty>0.000001);
+}
+
+async function callAPI(prompt, apiKey){
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','anthropic-version':'2023-06-01','x-api-key':apiKey},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:800,messages:[{role:'user',content:prompt}]})
+  });
+  const data=await resp.json();
+  const text=data.content?.find(c=>c.type==='text')?.text||'{}';
+  return text.replace(/```json|```/g,'').trim();
+}
+
+async function fetchQuotes(){
+  const positions=getPositions();
+  const tickers=[...new Set(positions.map(p=>p.ticker))];
+  if(!tickers.length){toast('Nenhuma posição para buscar cotações.');return;}
+  const apiKey=localStorage.getItem('it_apikey')||'';
+  if(!apiKey){toast('Configure sua API key na aba Config primeiro!');return;}
+  document.getElementById('last-update').textContent='buscando...';
+  try{
+    // Busca dólar primeiro
+    const dolarText=await callAPI('Qual a cotação atual do USD/BRL? Responda APENAS em JSON puro sem markdown: {"usdBRL":5.80}',apiKey);
+    const dolarData=JSON.parse(dolarText);
+    if(dolarData.usdBRL)S.dolar=dolarData.usdBRL;
+
+    // Divide tickers em lotes de 10 com pausa entre chamadas
+    const batchSize=10;
+    const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+    for(let i=0;i<tickers.length;i+=batchSize){
+      const batch=tickers.slice(i,i+batchSize);
+      document.getElementById('last-update').textContent=`buscando ${i+1}-${Math.min(i+batchSize,tickers.length)} de ${tickers.length}...`;
+      const prompt=`Cotações atuais NYSE/NASDAQ em USD para: ${batch.join(', ')}. Responda APENAS em JSON puro sem markdown: {"quotes":{"AAPL":195.50}}`;
+      try{
+        const text=await callAPI(prompt,apiKey);
+        const parsed=JSON.parse(text);
+        if(parsed.quotes){for(const[t,v]of Object.entries(parsed.quotes)){if(v)S.quotes[t.toUpperCase()]=v;}}
+      }catch(e){console.warn('Erro lote',i,e);}
+      if(i+batchSize<tickers.length) await sleep(1500);
+    }
+    S.lastUpdate=new Date().toISOString();
+    save();
+    toast('Cotações atualizadas!');
+  }catch(e){
+    console.warn('Erro cotações:',e);
+    toast('Erro ao buscar cotações: '+e.message);
+  }
+  document.getElementById('last-update').textContent='atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  renderAll();
+}
+
+function renderAll(){
+  renderDashboard();renderPortfolio();renderEntries();
+  renderRanking();renderDividends();renderConsolidated();
+}
+
+function renderDashboard(){
+  const positions=getPositions();
+  let totalInv=0,totalCur=0;
+  for(const p of positions){
+    const avgP=p.totalCost/p.lots.reduce((s,b)=>s+b.qty,0);
+    const q=S.quotes[p.ticker]||avgP;
+    totalInv+=p.totalCost;
+    totalCur+=p.totalQty*q;
+  }
+  const pnl=totalCur-totalInv;
+  const ret=totalInv>0?(pnl/totalInv)*100:0;
+  document.getElementById('d-invested').textContent=fmt(totalInv);
+  document.getElementById('d-invested-brl').textContent=fmtBRL(totalInv*S.dolar);
+  document.getElementById('d-current').textContent=fmt(totalCur);
+  document.getElementById('d-current-brl').textContent=fmtBRL(totalCur*S.dolar);
+  document.getElementById('d-pnl').innerHTML=signFmt(pnl,v=>fmt(v,'',''));
+  document.getElementById('d-pnl-brl').textContent=fmtBRL(pnl*S.dolar);
+  document.getElementById('d-ret').innerHTML=pct(ret);
+  document.getElementById('d-dolar-val').textContent=S.dolar.toFixed(2);
+
+  const brokers={};
+  for(const p of positions){
+    const avgP=p.totalCost/p.lots.reduce((s,b)=>s+b.qty,0);
+    const q=S.quotes[p.ticker]||avgP;
+    if(!brokers[p.broker])brokers[p.broker]={inv:0,cur:0};
+    brokers[p.broker].inv+=p.totalCost;
+    brokers[p.broker].cur+=p.totalQty*q;
+  }
+  let bbHtml='';
+  for(const[br,v]of Object.entries(brokers)){
+    const r=v.inv>0?((v.cur-v.inv)/v.inv)*100:0;
+    const portPct=totalCur>0?(v.cur/totalCur)*100:0;
+    const color=br==='Avenue'?'#bc8cff':'#d29922';
+    bbHtml+=`<div style="margin-bottom:14px">
+      <div class="flex-between" style="margin-bottom:4px">
+        <span style="font-weight:500">${br}</span>
+        <span class="${clr(r)}">${r>=0?'+':''}${r.toFixed(2)}%</span>
+      </div>
+      <div class="flex-between" style="font-size:12px;color:var(--text2);margin-bottom:5px">
+        <span>${fmt(v.inv)} → ${fmt(v.cur)}</span><span>${portPct.toFixed(1)}% da carteira</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${portPct}%;background:${color}"></div></div>
+    </div>`;
+  }
+  document.getElementById('broker-breakdown').innerHTML=bbHtml||'<div style="color:var(--text2);font-size:13px">Sem dados</div>';
+
+  const types={};
+  for(const p of positions){
+    const avgP=p.totalCost/p.lots.reduce((s,b)=>s+b.qty,0);
+    const q=S.quotes[p.ticker]||avgP;
+    if(!types[p.type])types[p.type]={inv:0,cur:0};
+    types[p.type].inv+=p.totalCost;
+    types[p.type].cur+=p.totalQty*q;
+  }
+  let tbHtml='';
+  for(const[t,v]of Object.entries(types)){
+    const r=v.inv>0?((v.cur-v.inv)/v.inv)*100:0;
+    const portPct=totalCur>0?(v.cur/totalCur)*100:0;
+    const color=t==='Stock'?'#3fb950':'#5ba4cf';
+    tbHtml+=`<div style="margin-bottom:14px">
+      <div class="flex-between" style="margin-bottom:4px">
+        <span class="badge badge-${t.toLowerCase()}">${t}</span>
+        <span class="${clr(r)}">${r>=0?'+':''}${r.toFixed(2)}%</span>
+      </div>
+      <div class="flex-between" style="font-size:12px;color:var(--text2);margin-bottom:5px">
+        <span>${fmt(v.cur)}</span><span>${portPct.toFixed(1)}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${portPct}%;background:${color}"></div></div>
+    </div>`;
+  }
+  document.getElementById('type-breakdown').innerHTML=tbHtml;
+
+  const sorted=positions.map(p=>{
+    const avgP=p.totalCost/p.lots.reduce((s,b)=>s+b.qty,0);
+    const q=S.quotes[p.ticker]||null;
+    const cur=q?p.totalQty*q:null;
+    const pnlV=cur?cur-p.totalCost:null;
+    const retV=p.totalCost>0&&pnlV!==null?(pnlV/p.totalCost)*100:null;
+    return{...p,avgP,q,cur,pnlV,retV};
+  }).sort((a,b)=>(b.cur||0)-(a.cur||0));
+
+  const rows=sorted.map((p,i)=>`
+    <tr>
+      <td style="color:var(--text2)">${i+1}</td>
+      <td><span class="ticker-sym">${p.ticker}</span></td>
+      <td><span class="badge badge-${p.broker.toLowerCase()}">${p.broker}</span></td>
+      <td><span class="badge badge-${p.type.toLowerCase()}">${p.type}</span></td>
+      <td>${p.totalQty.toFixed(4)}</td>
+      <td>${fmt(p.avgP)}</td>
+      <td>${p.q?fmt(p.q):'<span class="loading">—</span>'}</td>
+      <td>${fmt(p.totalCost)}</td>
+      <td>${p.cur?fmt(p.cur):'—'}</td>
+      <td>${p.pnlV!==null?signFmt(p.pnlV,v=>fmt(v,'','')):'—'}</td>
+      <td>${p.retV!==null?pct(p.retV):'—'}</td>
+    </tr>`).join('');
+  document.getElementById('top-table').innerHTML=rows||'<tr><td colspan="11" class="empty">Nenhum ativo</td></tr>';
+}
+
+function renderPortfolio(){
+  const positions=getPositions();
+  const search=(document.getElementById('search-ticker')?.value||'').toUpperCase();
+  const fb=document.getElementById('filter-broker')?.value||'';
+  const ft=document.getElementById('filter-type')?.value||'';
+  let totalCur=0;
+  for(const p of positions){
+    const avgP=p.totalCost/p.lots.reduce((s,b)=>s+b.qty,0);
+    const q=S.quotes[p.ticker]||avgP;
+    totalCur+=p.totalQty*q;
+  }
+  const filtered=positions.filter(p=>{
+    if(search&&!p.ticker.includes(search))return false;
+    if(fb&&p.broker!==fb)return false;
+    if(ft&&p.type!==ft)return false;
+    return true;
+  }).map(p=>{
+    const avgP=p.totalCost/p.lots.reduce((s,b)=>s+b.qty,0);
+    const q=S.quotes[p.ticker]||null;
+    const cur=q?p.totalQty*q:null;
+    const pnlV=cur?cur-p.totalCost:null;
+    const retV=p.totalCost>0&&pnlV!==null?(pnlV/p.totalCost)*100:null;
+    const portPct=cur&&totalCur>0?(cur/totalCur)*100:null;
+    return{...p,avgP,q,cur,pnlV,retV,portPct};
+  }).sort((a,b)=>(b.cur||0)-(a.cur||0));
+
+  const rows=filtered.map(p=>`
+    <tr>
+      <td><span class="ticker-sym">${p.ticker}</span></td>
+      <td><span class="badge badge-${p.broker.toLowerCase()}">${p.broker}</span></td>
+      <td><span class="badge badge-${p.type.toLowerCase()}">${p.type}</span></td>
+      <td>${p.totalQty.toFixed(4)}</td>
+      <td>${fmt(p.avgP)}</td>
+      <td>${p.q?fmt(p.q):'<span class="loading">—</span>'}</td>
+      <td>${fmt(p.totalCost)}</td>
+      <td>${p.cur?fmt(p.cur):'—'}</td>
+      <td>${p.pnlV!==null?signFmt(p.pnlV,v=>fmt(v,'','')):'—'}</td>
+      <td>${p.retV!==null?pct(p.retV):'—'}</td>
+      <td>${p.portPct!==null?p.portPct.toFixed(1)+'%':'—'}</td>
+    </tr>`).join('');
+  document.getElementById('portfolio-table').innerHTML=rows||'<tr><td colspan="11" class="empty">Nenhuma posição encontrada</td></tr>';
+}
+
+function renderEntries(){
+  document.getElementById('buys-count').textContent=S.buys.length;
+  document.getElementById('sells-count').textContent=S.sells.length;
+  const buyRows=[...S.buys].reverse().map(b=>`
+    <tr>
+      <td>${b.date}</td>
+      <td><span class="ticker-sym">${b.ticker.toUpperCase()}</span></td>
+      <td><span class="badge badge-${b.broker.toLowerCase()}">${b.broker}</span></td>
+      <td><span class="badge badge-${b.type.toLowerCase()}">${b.type}</span></td>
+      <td>${b.qty.toFixed(6)}</td>
+      <td>${fmt(b.price)}</td>
+      <td>${fmt(b.qty*b.price)}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="delBuy(${b.id})"><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('');
+  document.getElementById('buys-table').innerHTML=buyRows||'<tr><td colspan="8" class="empty">Nenhuma compra</td></tr>';
+
+  const sellRows=[...S.sells].reverse().map(s=>{
+    const avg=getAvgPrice(s.ticker,s.broker);
+    const receita=s.qty*s.price;
+    const custo=s.qty*avg;
+    const lp=receita-custo;
+    const ret=custo>0?(lp/custo)*100:0;
+    return`<tr>
+      <td>${s.date}</td>
+      <td><span class="ticker-sym">${s.ticker.toUpperCase()}</span></td>
+      <td><span class="badge badge-${s.broker.toLowerCase()}">${s.broker}</span></td>
+      <td>${s.qty.toFixed(4)}</td>
+      <td>${fmt(s.price)}</td>
+      <td>${fmt(avg)}</td>
+      <td>${fmt(receita)}</td>
+      <td>${signFmt(lp,v=>fmt(v,'',''))}</td>
+      <td>${pct(ret)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('sells-table').innerHTML=sellRows||'<tr><td colspan="9" class="empty">Nenhuma venda</td></tr>';
+}
+
+function getAvgPrice(ticker,broker){
+  const buys=S.buys.filter(b=>b.ticker.toUpperCase()===ticker.toUpperCase()&&b.broker===broker);
+  let tq=0,tc=0;for(const b of buys){tq+=b.qty;tc+=b.qty*b.price;}
+  return tq>0?tc/tq:0;
+}
+
+function renderRanking(){
+  const positions=getPositions();
+  const byTicker={};
+  for(const p of positions){
+    if(!byTicker[p.ticker])byTicker[p.ticker]={ticker:p.ticker,type:p.type,lots:0,totalQty:0,totalCost:0};
+    byTicker[p.ticker].lots++;
+    byTicker[p.ticker].totalQty+=p.totalQty;
+    byTicker[p.ticker].totalCost+=p.totalCost;
+  }
+  const allRanked=Object.values(byTicker).map(t=>{
+    const q=S.quotes[t.ticker]||null;
+    const avgP=t.totalCost/t.totalQty;
+    const ret=q?((q-avgP)/avgP)*100:null;
+    return{...t,q,avgP,ret};
+  }).sort((a,b)=>(b.ret||0)-(a.ret||0));
+
+  const withRet=allRanked.filter(t=>t.ret!==null);
+  const best=withRet.slice(0,5);
+  const worst=[...withRet].reverse().slice(0,5);
+
+  document.getElementById('rank-best').innerHTML=best.map((t,i)=>`
+    <div class="${['rank-1','rank-2','rank-3','',''][i]}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="rank-num">${i+1}</span>
+      <span class="ticker-sym">${t.ticker}</span>
+      <span class="badge badge-${t.type.toLowerCase()}" style="margin-left:4px">${t.type}</span>
+      <span class="pos" style="margin-left:auto;font-weight:500">+${t.ret.toFixed(2)}%</span>
+    </div>`).join('')||'<div class="empty" style="padding:20px">Atualize as cotações</div>';
+
+  document.getElementById('rank-worst').innerHTML=worst.map((t,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="rank-num">${i+1}</span>
+      <span class="ticker-sym">${t.ticker}</span>
+      <span class="badge badge-${t.type.toLowerCase()}" style="margin-left:4px">${t.type}</span>
+      <span class="neg" style="margin-left:auto;font-weight:500">${t.ret.toFixed(2)}%</span>
+    </div>`).join('')||'<div class="empty" style="padding:20px">Atualize as cotações</div>';
+
+  document.getElementById('rank-table').innerHTML=allRanked.map((t,i)=>`
+    <tr class="${i<3?'rank-'+(i+1):''}">
+      <td><span class="rank-num">${i+1}</span></td>
+      <td><span class="ticker-sym">${t.ticker}</span></td>
+      <td><span class="badge badge-${t.type.toLowerCase()}">${t.type}</span></td>
+      <td>${t.lots}</td>
+      <td>${t.totalQty.toFixed(4)}</td>
+      <td>${fmt(t.avgP)}</td>
+      <td>${t.q?fmt(t.q):'<span class="loading">—</span>'}</td>
+      <td>${t.ret!==null?pct(t.ret):'—'}</td>
+    </tr>`).join('');
+}
+
+function renderDividends(){
+  const total=S.dividends.reduce((s,d)=>s+(d.usd||0),0);
+  const totalBRL=S.dividends.reduce((s,d)=>s+((d.usd||0)*(d.rate||S.dolar)),0);
+  document.getElementById('div-total').textContent=fmt(total);
+  document.getElementById('div-total-brl').textContent=fmtBRL(totalBRL);
+  document.getElementById('div-count').textContent=S.dividends.length;
+  const rows=[...S.dividends].reverse().map(d=>`
+    <tr>
+      <td>${d.date}</td>
+      <td><span class="ticker-sym">${d.ticker}</span></td>
+      <td><span class="badge badge-${d.broker.toLowerCase()}">${d.broker}</span></td>
+      <td>${d.type}</td>
+      <td>${fmt(d.usd)}</td>
+      <td>${(d.rate||S.dolar).toFixed(2)}</td>
+      <td>${fmtBRL((d.usd||0)*(d.rate||S.dolar))}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="delDiv(${d.id})"><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('');
+  document.getElementById('div-table').innerHTML=rows||'<tr><td colspan="8" class="empty">Nenhum provento lançado</td></tr>';
+}
+
+function renderConsolidated(){
+  const positions=getPositions();
+  let nyseInv=0,nyseCur=0;
+  for(const p of positions){
+    const avgP=p.totalCost/p.lots.reduce((s,b)=>s+b.qty,0);
+    const q=S.quotes[p.ticker]||avgP;
+    nyseInv+=p.totalCost;
+    nyseCur+=p.totalQty*q;
+  }
+  const nysePnl=nyseCur-nyseInv;
+  const nyseRet=nyseInv>0?(nysePnl/nyseInv)*100:0;
+  document.getElementById('nyse-inv-brl').textContent=fmtBRL(nyseInv*S.dolar);
+  document.getElementById('nyse-cur-brl').textContent=fmtBRL(nyseCur*S.dolar);
+  document.getElementById('nyse-pnl-brl').innerHTML=signFmt(nysePnl*S.dolar,fmtBRL);
+  document.getElementById('nyse-ret').innerHTML=pct(nyseRet);
+
+  document.getElementById('td-table').innerHTML=S.td.map((t,i)=>`
+    <tr><td>${t.titulo}</td><td>${fmtBRL(t.inv)}</td><td>${fmtBRL(t.atual)}</td><td>${t.venc||'—'}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="delTD(${i})"><i class="ti ti-trash"></i></button></td></tr>`
+  ).join('')||'<tr><td colspan="5" class="empty">Sem títulos cadastrados</td></tr>';
+
+  document.getElementById('toro-table').innerHTML=S.toro.map((t,i)=>`
+    <tr><td>${t.prod}</td><td>${fmtBRL(t.inv)}</td><td>${fmtBRL(t.atual)}</td><td>${t.tipo}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="delToro(${i})"><i class="ti ti-trash"></i></button></td></tr>`
+  ).join('')||'<tr><td colspan="5" class="empty">Sem produtos cadastrados</td></tr>';
+
+  const tdTotal=S.td.reduce((s,t)=>s+(t.atual||0),0);
+  const tdInv=S.td.reduce((s,t)=>s+(t.inv||0),0);
+  const toroTotal=S.toro.reduce((s,t)=>s+(t.atual||0),0);
+  const toroInv=S.toro.reduce((s,t)=>s+(t.inv||0),0);
+  const grandTotal=(nyseCur*S.dolar)+tdTotal+toroTotal;
+  const grandInv=(nyseInv*S.dolar)+tdInv+toroInv;
+
+  const rows=[
+    {name:'🇺🇸 NYSE (Avenue + Nomad)',inv:nyseInv*S.dolar,cur:nyseCur*S.dolar},
+    {name:'🏦 Tesouro Direto',inv:tdInv,cur:tdTotal},
+    {name:'🏛️ Toro (Santander)',inv:toroInv,cur:toroTotal},
+  ].map(row=>{
+    const lp=row.cur-row.inv;
+    const p=grandTotal>0?(row.cur/grandTotal)*100:0;
+    return`<tr><td>${row.name}</td><td>${fmtBRL(row.inv)}</td><td>${fmtBRL(row.cur)}</td>
+      <td>${signFmt(lp,fmtBRL)}</td><td>${p.toFixed(1)}%</td></tr>`;
+  }).join('');
+
+  const totalLp=grandTotal-grandInv;
+  document.getElementById('consol-table').innerHTML=rows+`
+    <tr style="border-top:2px solid var(--border);font-weight:500">
+      <td>TOTAL GERAL</td><td>${fmtBRL(grandInv)}</td><td>${fmtBRL(grandTotal)}</td>
+      <td>${signFmt(totalLp,fmtBRL)}</td><td>100%</td>
+    </tr>`;
+}
+
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn){document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+}
+
+function showTab(id,btn){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');
+  document.getElementById(id).style.display='block';
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function openModal(id){
+  if(id==='modal-sell'){
+    const tickers=[...new Set(S.buys.map(b=>b.ticker.toUpperCase()))].sort();
+    document.getElementById('sell-ticker').innerHTML=tickers.map(t=>`<option>${t}</option>`).join('');
+  }
+  document.getElementById(id).classList.add('open');
+  const today=new Date().toISOString().split('T')[0];
+  document.querySelectorAll(`#${id} input[type="date"]`).forEach(f=>{if(!f.value)f.value=today;});
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function addBuy(){
+  const date=document.getElementById('buy-date').value;
+  const ticker=document.getElementById('buy-ticker').value.toUpperCase().trim();
+  const broker=document.getElementById('buy-broker').value;
+  const type=document.getElementById('buy-type').value;
+  const qty=parseFloat(document.getElementById('buy-qty').value);
+  const price=parseFloat(document.getElementById('buy-price').value);
+  if(!date||!ticker||!qty||!price){alert('Preencha todos os campos obrigatórios');return;}
+  S.buys.push({id:++nextId,date,ticker,broker,type,qty,price});
+  save();renderAll();closeModal('modal-buy');
+  document.getElementById('buy-ticker').value='';
+  document.getElementById('buy-qty').value='';
+  document.getElementById('buy-price').value='';
+  toast('Compra registrada!');
+}
+
+function delBuy(id){
+  if(!confirm('Remover este lançamento?'))return;
+  S.buys=S.buys.filter(b=>b.id!==id);
+  save();renderAll();toast('Lançamento removido.');
+}
+
+function addSell(){
+  const date=document.getElementById('sell-date').value;
+  const ticker=document.getElementById('sell-ticker').value;
+  const broker=document.getElementById('sell-broker').value;
+  const qty=parseFloat(document.getElementById('sell-qty').value);
+  const price=parseFloat(document.getElementById('sell-price').value);
+  if(!date||!ticker||!qty||!price){alert('Preencha todos os campos');return;}
+  S.sells.push({id:++nextId,date,ticker,broker,qty,price});
+  save();renderAll();closeModal('modal-sell');toast('Venda registrada!');
+}
+
+function addDiv(){
+  const date=document.getElementById('div-date').value;
+  const ticker=document.getElementById('div-ticker').value.toUpperCase().trim();
+  const broker=document.getElementById('div-broker').value;
+  const type=document.getElementById('div-type-sel').value;
+  const usd=parseFloat(document.getElementById('div-usd').value);
+  const rate=parseFloat(document.getElementById('div-rate').value)||S.dolar;
+  if(!date||!ticker||!usd){alert('Preencha os campos obrigatórios');return;}
+  S.dividends.push({id:++nextId,date,ticker,broker,type,usd,rate});
+  save();renderDividends();closeModal('modal-div');toast('Provento registrado!');
+}
+
+function delDiv(id){
+  S.dividends=S.dividends.filter(d=>d.id!==id);
+  save();renderDividends();
+}
+
+function addTD(){
+  const titulo=document.getElementById('td-titulo').value.trim();
+  const inv=parseFloat(document.getElementById('td-inv').value);
+  const atual=parseFloat(document.getElementById('td-atual').value);
+  const venc=document.getElementById('td-venc').value;
+  if(!titulo||!inv||!atual){alert('Preencha os campos obrigatórios');return;}
+  S.td.push({titulo,inv,atual,venc});
+  save();renderConsolidated();closeModal('modal-td');toast('Título cadastrado!');
+}
+
+function delTD(i){S.td.splice(i,1);save();renderConsolidated();}
+
+function addToro(){
+  const prod=document.getElementById('toro-prod').value.trim();
+  const inv=parseFloat(document.getElementById('toro-inv').value);
+  const atual=parseFloat(document.getElementById('toro-atual').value);
+  const tipo=document.getElementById('toro-tipo').value.trim();
+  if(!prod||!inv||!atual){alert('Preencha os campos obrigatórios');return;}
+  S.toro.push({prod,inv,atual,tipo});
+  save();renderConsolidated();closeModal('modal-toro');toast('Produto cadastrado!');
+}
+
+function delToro(i){S.toro.splice(i,1);save();renderConsolidated();}
+
+function saveConfig(){
+  const apiKey=document.getElementById('cfg-apikey').value.trim();
+  if(apiKey)localStorage.setItem('it_apikey',apiKey);
+  const dolar=parseFloat(document.getElementById('cfg-dolar').value);
+  if(dolar&&!isNaN(dolar))S.dolar=dolar;
+  save();renderAll();toast('Configurações salvas!');
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='investtracker_backup_'+new Date().toISOString().split('T')[0]+'.json';
+  a.click();URL.revokeObjectURL(url);
+}
+
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      S={...S,...d};save();renderAll();toast('Dados importados com sucesso!');
+    }catch(err){alert('Erro ao importar: '+err.message);}
+  };
+  r.readAsText(f);
+}
+
+function clearAll(){
+  localStorage.removeItem('investTracker_v2');
+  location.reload();
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+});
+
+load();
+renderAll();
+const savedKey=localStorage.getItem('it_apikey')||'';
+const keyField=document.getElementById('cfg-apikey');
+if(savedKey&&keyField)keyField.value=savedKey;
+</script>
+</body>
+</html>
