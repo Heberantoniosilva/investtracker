@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="InvestTracker">
 <title>InvestTracker</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#f8f9fa;--text2:#adb5bd;--green:#06d6a0;--red:#ef476f;--amber:#ffd166;--acc2:#00b4d8}
@@ -74,6 +76,12 @@ input:focus,select:focus{border-color:var(--acc2)}
 .flex-between{display:flex;align-items:center;justify-content:space-between}
 .chip{background:#21262d;border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--text2)}
 .br-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:12px}
+.period-btn{background:#21262d;border:1px solid var(--border);color:var(--text2);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px;transition:.15s}
+.period-btn:hover{background:var(--border);color:var(--text)}
+.period-btn.active{background:var(--acc2);border-color:var(--acc2);color:#000;font-weight:500}
+.ticker-chip{background:#21262d;border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;display:flex;align-items:center;gap:6px;color:var(--text)}
+.ticker-chip .chip-x{background:none;border:none;color:var(--text2);cursor:pointer;font-size:14px;line-height:1;padding:0}
+.ticker-chip .chip-x:hover{color:var(--red)}
 .divider{height:1px;background:var(--border);margin:16px 0}
 .ai-badge{background:#764ba2;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500}
 #toast{position:fixed;bottom:24px;right:24px;background:#06d6a0;color:#000;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;display:none;animation:fadeIn .2s}
@@ -89,6 +97,7 @@ input:focus,select:focus{border-color:var(--acc2)}
       <button class="nav-btn active" onclick="showPage('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
       <button class="nav-btn" onclick="showPage('portfolio',this)"><i class="ti ti-briefcase"></i> Carteira</button>
       <button class="nav-btn" onclick="showPage('entries',this)"><i class="ti ti-plus"></i> Lançamentos</button>
+      <button class="nav-btn" onclick="showPage('charts',this)"><i class="ti ti-chart-line"></i> Gráficos</button>
       <button class="nav-btn" onclick="showPage('ranking',this)"><i class="ti ti-trophy"></i> Ranking</button>
       <button class="nav-btn" onclick="showPage('dividends',this)"><i class="ti ti-coin"></i> Dividendos</button>
       <button class="nav-btn" onclick="showPage('consolidated',this)"><i class="ti ti-world"></i> Consolidado</button>
@@ -202,6 +211,49 @@ input:focus,select:focus{border-color:var(--acc2)}
     </div>
 
     <!-- RANKING -->
+    <!-- GRÁFICOS -->
+    <div id="page-charts" class="page">
+      <div class="section-title"><i class="ti ti-chart-line"></i> Evolução de Cotações</div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <label class="form-label">Tickers (até 5)</label>
+            <div id="ticker-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+            <div style="display:flex;gap:6px">
+              <select id="chart-ticker-select" style="flex:1">
+                <option value="">Selecione um ticker...</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="addChartTicker()"><i class="ti ti-plus"></i> Adicionar</button>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Período</label>
+            <div style="display:flex;flex-wrap:wrap;gap:4px" id="period-btns">
+              <button class="period-btn" onclick="setPeriod('1d','5m')" data-p="1d">1D</button>
+              <button class="period-btn" onclick="setPeriod('5d','1h')" data-p="5d">1S</button>
+              <button class="period-btn active" onclick="setPeriod('1mo','1d')" data-p="1mo">1M</button>
+              <button class="period-btn" onclick="setPeriod('2mo','1d')" data-p="2mo">2M</button>
+              <button class="period-btn" onclick="setPeriod('3mo','1d')" data-p="3mo">3M</button>
+              <button class="period-btn" onclick="setPeriod('6mo','1wk')" data-p="6mo">6M</button>
+              <button class="period-btn" onclick="setPeriod('9mo','1wk')" data-p="9mo">9M</button>
+              <button class="period-btn" onclick="setPeriod('ytd','1d')" data-p="ytd">YTD</button>
+              <button class="period-btn" onclick="setPeriod('1y','1wk')" data-p="1y">1A</button>
+              <button class="period-btn" onclick="setPeriod('2y','1wk')" data-p="2y">2A</button>
+            </div>
+          </div>
+          <div style="align-self:flex-end">
+            <button class="btn btn-primary btn-sm" onclick="loadCharts()"><i class="ti ti-refresh"></i> Atualizar</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="position:relative;min-height:380px">
+        <div id="chart-status" style="text-align:center;padding:20px;color:var(--text2);font-size:13px">Selecione tickers e clique em Atualizar</div>
+        <canvas id="main-chart" style="display:none;max-height:400px"></canvas>
+      </div>
+      <div id="chart-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px"></div>
+      <div id="chart-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px"></div>
+    </div>
+
     <div id="page-ranking" class="page">
       <div class="section-title"><i class="ti ti-trophy"></i> Ranking de Ativos</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
@@ -957,6 +1009,7 @@ function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   if(btn){document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  if(id==='charts')initChartPage();
 }
 
 function showTab(id,btn){
@@ -1114,6 +1167,182 @@ function clearAll(){
   localStorage.removeItem('investTracker_v2');
   location.reload();
 }
+
+// ======= CHARTS =======
+const CHART_COLORS=['#00b4d8','#06d6a0','#ffd166','#ef476f','#bc8cff'];
+let chartTickers=[];
+let chartPeriod='1mo';
+let chartInterval='1d';
+let mainChart=null;
+
+function initChartPage(){
+  const pos=getPositions();
+  const tickers=[...new Set(pos.map(p=>p.ticker))].sort();
+  const sel=document.getElementById('chart-ticker-select');
+  if(sel){sel.innerHTML='<option value="">Selecione um ticker...</option>'+tickers.map(t=>`<option>${t}</option>`).join('');}
+}
+
+function addChartTicker(){
+  const sel=document.getElementById('chart-ticker-select');
+  const t=sel.value.toUpperCase().trim();
+  if(!t)return;
+  if(chartTickers.includes(t)){toast('Ticker já adicionado');return;}
+  if(chartTickers.length>=5){toast('Máximo de 5 tickers');return;}
+  chartTickers.push(t);
+  sel.value='';
+  renderChips();
+}
+
+function removeChartTicker(t){
+  chartTickers=chartTickers.filter(x=>x!==t);
+  renderChips();
+}
+
+function renderChips(){
+  const div=document.getElementById('ticker-chips');
+  if(!div)return;
+  div.innerHTML=chartTickers.map((t,i)=>`
+    <div class="ticker-chip" style="border-color:${CHART_COLORS[i]}">
+      <span style="color:${CHART_COLORS[i]};font-weight:600">${t}</span>
+      <button class="chip-x" onclick="removeChartTicker('${t}')">×</button>
+    </div>`).join('');
+}
+
+function setPeriod(range,interval){
+  chartPeriod=range;chartInterval=interval;
+  document.querySelectorAll('.period-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.p===range);
+  });
+}
+
+async function fetchHistorical(ticker,range,interval){
+  try{
+    const url=`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=${interval}&range=${range}`;
+    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const r=await fetch(proxy);
+    const d=await r.json();
+    const parsed=JSON.parse(d.contents);
+    const result=parsed?.chart?.result?.[0];
+    if(!result)return null;
+    const timestamps=result.timestamp||[];
+    const closes=result.indicators?.quote?.[0]?.close||[];
+    const points=timestamps.map((t,i)=>({x:new Date(t*1000),y:closes[i]})).filter(p=>p.y!=null);
+    return{ticker,points,meta:result.meta};
+  }catch(e){console.warn('fetchHistorical error',ticker,e);return null;}
+}
+
+async function loadCharts(){
+  if(chartTickers.length===0){toast('Adicione pelo menos 1 ticker');return;}
+  const status=document.getElementById('chart-status');
+  const canvas=document.getElementById('main-chart');
+  status.style.display='block';
+  status.textContent='Buscando dados históricos...';
+  canvas.style.display='none';
+
+  const results=await Promise.all(chartTickers.map(t=>fetchHistorical(t,chartPeriod,chartInterval)));
+  const valid=results.filter(r=>r&&r.points.length>0);
+
+  if(valid.length===0){status.textContent='Não foi possível carregar dados. Tente outro período.';return;}
+
+  status.style.display='none';
+  canvas.style.display='block';
+
+  if(mainChart){mainChart.destroy();mainChart=null;}
+
+  const ctx=canvas.getContext('2d');
+  
+  // Normalize to % change from first point for multi-ticker comparison
+  const normalize=chartTickers.length>1;
+
+  const datasets=valid.map((r,i)=>{
+    const color=CHART_COLORS[i];
+    const base=r.points[0]?.y||1;
+    const data=r.points.map(p=>({x:p.x,y:normalize?((p.y-base)/base)*100:p.y}));
+    return{
+      label:r.ticker,
+      data,
+      borderColor:color,
+      backgroundColor:color+'22',
+      borderWidth:2,
+      pointRadius:0,
+      pointHoverRadius:4,
+      fill:valid.length===1,
+      tension:0.3,
+    };
+  });
+
+  mainChart=new Chart(ctx,{
+    type:'line',
+    data:{datasets},
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#161b22',
+          borderColor:'#30363d',
+          borderWidth:1,
+          titleColor:'#adb5bd',
+          bodyColor:'#f8f9fa',
+          callbacks:{
+            label:ctx=>`${ctx.dataset.label}: ${normalize?ctx.parsed.y.toFixed(2)+'%':'$'+ctx.parsed.y.toFixed(2)}`
+          }
+        }
+      },
+      scales:{
+        x:{
+          type:'time',
+          time:{tooltipFormat:'dd/MM/yyyy HH:mm'},
+          grid:{color:'#21262d'},
+          ticks:{color:'#adb5bd',maxTicksLimit:8}
+        },
+        y:{
+          grid:{color:'#21262d'},
+          ticks:{
+            color:'#adb5bd',
+            callback:v=>normalize?v.toFixed(1)+'%':'$'+v.toFixed(2)
+          }
+        }
+      }
+    }
+  });
+
+  // Render stats
+  const statsDiv=document.getElementById('chart-stats');
+  const legendDiv=document.getElementById('chart-legend');
+  
+  legendDiv.innerHTML=valid.map((r,i)=>{
+    const first=r.points[0]?.y||0;
+    const last=r.points[r.points.length-1]?.y||0;
+    const chg=((last-first)/first)*100;
+    return`<div style="display:flex;align-items:center;gap:8px;font-size:13px">
+      <span style="width:12px;height:12px;border-radius:50%;background:${CHART_COLORS[i]};display:inline-block"></span>
+      <span style="font-weight:600;color:${CHART_COLORS[i]}">${r.ticker}</span>
+      <span style="color:#adb5bd">$${last.toFixed(2)}</span>
+      <span class="${chg>=0?'pos':'neg'}">${chg>=0?'+':''}${chg.toFixed(2)}%</span>
+    </div>`;
+  }).join('');
+
+  statsDiv.innerHTML=valid.map((r,i)=>{
+    const pts=r.points;
+    const first=pts[0]?.y||0;
+    const last=pts[pts.length-1]?.y||0;
+    const high=Math.max(...pts.map(p=>p.y));
+    const low=Math.min(...pts.map(p=>p.y));
+    const chg=((last-first)/first)*100;
+    return`<div class="stat-card" style="border-color:${CHART_COLORS[i]}40">
+      <div class="stat-label" style="color:${CHART_COLORS[i]}">${r.ticker}</div>
+      <div class="stat-value" style="font-size:18px">$${last.toFixed(2)}</div>
+      <div class="stat-sub"><span class="${chg>=0?'pos':'neg'}">${chg>=0?'+':''}${chg.toFixed(2)}%</span> no período</div>
+      <div style="font-size:11px;color:#adb5bd;margin-top:6px;display:flex;justify-content:space-between">
+        <span>↑ $${high.toFixed(2)}</span><span>↓ $${low.toFixed(2)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+// ======= END CHARTS =======
 
 document.querySelectorAll('.modal-overlay').forEach(m=>{
   m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
