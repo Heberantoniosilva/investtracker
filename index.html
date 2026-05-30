@@ -153,9 +153,23 @@ input:focus,select:focus{border-color:var(--acc2)}
         </div>
       </div>
       <div class="card" style="padding:0;overflow:auto">
-        <table>
-          <thead><tr><th>Ticker</th><th>Corretora</th><th>Tipo</th><th>Qtd</th><th>P. Médio (USD)</th><th>Cotação</th><th>Investido</th><th>Atual (USD)</th><th>L/P (USD)</th><th>Retorno %</th><th>% Carteira</th></tr></thead>
-          <tbody id="portfolio-table"><tr><td colspan="11" class="empty">Calculando...</td></tr></tbody>
+        <table id="portfolio-tbl">
+          <thead><tr>
+            <th onclick="sortPortfolio('ticker')" style="cursor:pointer;user-select:none">Ticker <span id="sort-ticker">↕</span></th>
+            <th onclick="sortPortfolio('broker')" style="cursor:pointer;user-select:none">Corretora <span id="sort-broker">↕</span></th>
+            <th onclick="sortPortfolio('type')" style="cursor:pointer;user-select:none">Tipo <span id="sort-type">↕</span></th>
+            <th onclick="sortPortfolio('totalQty')" style="cursor:pointer;user-select:none">Qtd <span id="sort-totalQty">↕</span></th>
+            <th onclick="sortPortfolio('avgP')" style="cursor:pointer;user-select:none">P. Médio <span id="sort-avgP">↕</span></th>
+            <th onclick="sortPortfolio('q')" style="cursor:pointer;user-select:none">Cotação <span id="sort-q">↕</span></th>
+            <th onclick="sortPortfolio('totalCost')" style="cursor:pointer;user-select:none">Investido <span id="sort-totalCost">↕</span></th>
+            <th onclick="sortPortfolio('cur')" style="cursor:pointer;user-select:none">Atual (USD) <span id="sort-cur">↕</span></th>
+            <th onclick="sortPortfolio('diff')" style="cursor:pointer;user-select:none">Diferença <span id="sort-diff">↕</span></th>
+            <th onclick="sortPortfolio('pnlV')" style="cursor:pointer;user-select:none">L/P (USD) <span id="sort-pnlV">↕</span></th>
+            <th onclick="sortPortfolio('retV')" style="cursor:pointer;user-select:none">Retorno % <span id="sort-retV">↕</span></th>
+            <th onclick="sortPortfolio('portPct')" style="cursor:pointer;user-select:none">% Cart. <span id="sort-portPct">↕</span></th>
+          </tr></thead>
+          <tbody id="portfolio-table"><tr><td colspan="12" class="empty">Calculando...</td></tr></tbody>
+          <tfoot id="portfolio-totals"></tfoot>
         </table>
       </div>
     </div>
@@ -340,11 +354,17 @@ input:focus,select:focus{border-color:var(--acc2)}
     <div class="modal-title">Registrar Venda <button class="close-btn" onclick="closeModal('modal-sell')">×</button></div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Data *</label><input type="date" id="sell-date"></div>
-      <div class="form-group"><label class="form-label">Ticker *</label><select id="sell-ticker"></select></div>
+      <div class="form-group"><label class="form-label">Ticker *</label><select id="sell-ticker" onchange="onSellTickerChange()"></select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Corretora</label><select id="sell-broker"><option>Avenue</option><option>Nomad</option></select></div>
+      <div class="form-group"><label class="form-label">Corretora</label><select id="sell-broker" onchange="onSellTickerChange()"><option>Avenue</option><option>Nomad</option></select></div>
       <div class="form-group"><label class="form-label">Qtd Vendida *</label><input type="number" id="sell-qty" step="0.000001"></div>
+    </div>
+    <div id="sell-position-info" style="background:#21262d;border:1px solid #30363d;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:#adb5bd">Posição atual: <strong id="sell-pos-qty" style="color:#f8f9fa">—</strong> ações | P.Médio: <strong id="sell-pos-avg" style="color:#f8f9fa">—</strong></span>
+        <button class="btn btn-sm btn-primary" onclick="liquidarPosicao()" style="padding:3px 10px;font-size:11px"><i class="ti ti-check-all"></i> Liquidar tudo</button>
+      </div>
     </div>
     <div class="form-group"><label class="form-label">Preço de Venda (USD) *</label><input type="number" id="sell-price" step="0.01"></div>
     <div style="display:flex;gap:8px;margin-top:8px">
@@ -603,13 +623,18 @@ function renderDashboard(){
     const r=v.inv>0?((v.cur-v.inv)/v.inv)*100:0;
     const portPct=totalCur>0?(v.cur/totalCur)*100:0;
     const color=br==='Avenue'?'#bc8cff':'#d29922';
+    const diff=v.cur-v.inv;
     bbHtml+=`<div style="margin-bottom:14px">
       <div class="flex-between" style="margin-bottom:4px">
         <span style="font-weight:500">${br}</span>
         <span class="${clr(r)}">${r>=0?'+':''}${r.toFixed(2)}%</span>
       </div>
-      <div class="flex-between" style="font-size:12px;color:var(--text2);margin-bottom:5px">
-        <span>${fmt(v.inv)} → ${fmt(v.cur)}</span><span>${portPct.toFixed(1)}% da carteira</span>
+      <div class="flex-between" style="font-size:12px;color:var(--text2);margin-bottom:3px">
+        <span>Inv: ${fmt(v.inv)}</span><span>Atual: ${fmt(v.cur)}</span>
+      </div>
+      <div class="flex-between" style="font-size:12px;margin-bottom:4px">
+        <span style="color:#adb5bd">Ganho: <span class="${clr(diff)}">${diff>=0?'+':''}${fmt(diff,'')}</span></span>
+        <span style="color:#adb5bd">${portPct.toFixed(1)}% carteira</span>
       </div>
       <div class="progress-bar"><div class="progress-fill" style="width:${portPct}%;background:${color}"></div></div>
     </div>`;
@@ -642,16 +667,17 @@ function renderDashboard(){
   }
   document.getElementById('type-breakdown').innerHTML=tbHtml;
 
-  const sorted=positions.map(p=>{
+  let dashData=positions.map(p=>{
     const avgP=p.totalCost/p.lots.reduce((s,b)=>s+b.qty,0);
     const q=S.quotes[p.ticker]||null;
     const cur=q?p.totalQty*q:null;
     const pnlV=cur?cur-p.totalCost:null;
     const retV=p.totalCost>0&&pnlV!==null?(pnlV/p.totalCost)*100:null;
     return{...p,avgP,q,cur,pnlV,retV};
-  }).sort((a,b)=>(b.cur||0)-(a.cur||0));
+  });
+  dashData=sortDashData(dashData);
 
-  const rows=sorted.map((p,i)=>`
+  const rows=dashData.map((p,i)=>`
     <tr>
       <td style="color:var(--text2)">${i+1}</td>
       <td><span class="ticker-sym">${p.ticker}</span></td>
@@ -666,6 +692,33 @@ function renderDashboard(){
       <td>${p.retV!==null?pct(p.retV):'—'}</td>
     </tr>`).join('');
   document.getElementById('top-table').innerHTML=rows||'<tr><td colspan="11" class="empty">Nenhum ativo</td></tr>';
+}
+
+let dashSortCol='cur',dashSortDir=-1;
+function sortDash(col){
+  if(col==='rank'){dashSortCol='cur';dashSortDir=-1;}
+  else if(dashSortCol===col)dashSortDir*=-1;
+  else{dashSortCol=col;dashSortDir=-1;}
+  document.querySelectorAll('[id^="dsort-"]').forEach(e=>e.textContent='↕');
+  const el=document.getElementById('dsort-'+col);if(el)el.textContent=dashSortDir===-1?'↓':'↑';
+  renderDashboard();
+}
+function sortDashData(data){
+  return [...data].sort((a,b)=>{
+    const av=a[dashSortCol],bv=b[dashSortCol];
+    if(av===null||av===undefined)return 1;
+    if(bv===null||bv===undefined)return -1;
+    if(typeof av==='string')return dashSortDir*av.localeCompare(bv);
+    return dashSortDir*(bv-av);
+  });
+}
+
+let portSortCol='cur',portSortDir=-1;
+function sortPortfolio(col){
+  if(portSortCol===col)portSortDir*=-1;else{portSortCol=col;portSortDir=-1;}
+  document.querySelectorAll('[id^="sort-"]').forEach(e=>e.textContent='↕');
+  const el=document.getElementById('sort-'+col);if(el)el.textContent=portSortDir===-1?'↓':'↑';
+  renderPortfolio();
 }
 
 function renderPortfolio(){
@@ -688,11 +741,18 @@ function renderPortfolio(){
     const avgP=p.totalCost/p.lots.reduce((s,b)=>s+b.qty,0);
     const q=S.quotes[p.ticker]||null;
     const cur=q?p.totalQty*q:null;
-    const pnlV=cur?cur-p.totalCost:null;
-    const retV=p.totalCost>0&&pnlV!==null?(pnlV/p.totalCost)*100:null;
+    const diff=cur!==null?cur-p.totalCost:null;
+    const pnlV=diff;
+    const retV=p.totalCost>0&&diff!==null?(diff/p.totalCost)*100:null;
     const portPct=cur&&totalCur>0?(cur/totalCur)*100:null;
-    return{...p,avgP,q,cur,pnlV,retV,portPct};
-  }).sort((a,b)=>(b.cur||0)-(a.cur||0));
+    return{...p,avgP,q,cur,diff,pnlV,retV,portPct};
+  }).sort((a,b)=>{
+    const av=a[portSortCol],bv=b[portSortCol];
+    if(av===null||av===undefined)return 1;
+    if(bv===null||bv===undefined)return -1;
+    if(typeof av==='string')return portSortDir*av.localeCompare(bv);
+    return portSortDir*(bv-av);
+  });
 
   const rows=filtered.map(p=>`
     <tr>
@@ -704,11 +764,29 @@ function renderPortfolio(){
       <td>${p.q?fmt(p.q):'<span class="loading">—</span>'}</td>
       <td>${fmt(p.totalCost)}</td>
       <td>${p.cur?fmt(p.cur):'—'}</td>
+      <td>${p.diff!==null?signFmt(p.diff,v=>fmt(v,'','')):'—'}</td>
       <td>${p.pnlV!==null?signFmt(p.pnlV,v=>fmt(v,'','')):'—'}</td>
       <td>${p.retV!==null?pct(p.retV):'—'}</td>
       <td>${p.portPct!==null?p.portPct.toFixed(1)+'%':'—'}</td>
     </tr>`).join('');
-  document.getElementById('portfolio-table').innerHTML=rows||'<tr><td colspan="11" class="empty">Nenhuma posição encontrada</td></tr>';
+  document.getElementById('portfolio-table').innerHTML=rows||'<tr><td colspan="12" class="empty">Nenhuma posição encontrada</td></tr>';
+
+  // Totals row
+  const totInv=filtered.reduce((s,p)=>s+(p.totalCost||0),0);
+  const totCur=filtered.reduce((s,p)=>s+(p.cur||0),0);
+  const totDiff=totCur-totInv;
+  const totRet=totInv>0?(totDiff/totInv)*100:0;
+  const hasQ=filtered.some(p=>p.q);
+  document.getElementById('portfolio-totals').innerHTML=hasQ?`<tr style="background:#21262d;font-weight:600;border-top:2px solid #30363d">
+    <td colspan="3" style="color:#00b4d8;padding:8px 10px">TOTAL (${filtered.length} posições)</td>
+    <td></td><td></td><td></td>
+    <td style="padding:8px 10px">${fmt(totInv)}</td>
+    <td style="padding:8px 10px">${fmt(totCur)}</td>
+    <td style="padding:8px 10px"><span class="${clr(totDiff)}">${totDiff>=0?'+':'−'}${fmt(Math.abs(totDiff),'')}</span></td>
+    <td style="padding:8px 10px"><span class="${clr(totDiff)}">${totDiff>=0?'+':'−'}${fmt(Math.abs(totDiff),'')}</span></td>
+    <td style="padding:8px 10px"><span class="${clr(totRet)}">${totRet>=0?'+':''}${totRet.toFixed(2)}%</span></td>
+    <td style="padding:8px 10px">100%</td>
+  </tr>`:'';
 }
 
 function renderEntries(){
@@ -888,10 +966,41 @@ function showTab(id,btn){
   btn.classList.add('active');
 }
 
+function onSellTickerChange(){
+  const ticker=document.getElementById('sell-ticker').value;
+  const broker=document.getElementById('sell-broker').value;
+  if(!ticker||!broker)return;
+  const pos=getPositions().find(p=>p.ticker===ticker&&p.broker===broker);
+  const infoDiv=document.getElementById('sell-position-info');
+  if(pos&&pos.totalQty>0){
+    const avgP=pos.totalCost/pos.lots.reduce((s,b)=>s+b.qty,0);
+    document.getElementById('sell-pos-qty').textContent=pos.totalQty.toFixed(6);
+    document.getElementById('sell-pos-avg').textContent=fmt(avgP);
+    infoDiv.style.display='block';
+  } else {
+    infoDiv.style.display='none';
+  }
+}
+
+function liquidarPosicao(){
+  const ticker=document.getElementById('sell-ticker').value;
+  const broker=document.getElementById('sell-broker').value;
+  const pos=getPositions().find(p=>p.ticker===ticker&&p.broker===broker);
+  if(pos){
+    document.getElementById('sell-qty').value=pos.totalQty.toFixed(6);
+    const q=S.quotes[ticker]||null;
+    if(q)document.getElementById('sell-price').value=q.toFixed(2);
+    toast('Posição completa preenchida — confirme o preço e registre.');
+  }
+}
+
 function openModal(id){
   if(id==='modal-sell'){
     const tickers=[...new Set(S.buys.map(b=>b.ticker.toUpperCase()))].sort();
     document.getElementById('sell-ticker').innerHTML=tickers.map(t=>`<option>${t}</option>`).join('');
+    document.getElementById('sell-position-info').style.display='none';
+    document.getElementById('sell-qty').value='';
+    onSellTickerChange();
   }
   document.getElementById(id).classList.add('open');
   const today=new Date().toISOString().split('T')[0];
