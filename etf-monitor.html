@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 ETF Monitor — Performance Multi-Períodos</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      font-size: 13px;
+    }
+
+    /* ── HEADER ── */
+    #header {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+      border-bottom: 1px solid #30363d;
+      padding: 14px 20px;
+    }
+    .header-inner {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; flex-wrap: wrap; gap: 10px;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-icon {
+      background: linear-gradient(135deg, #1f6feb, #388bfd);
+      border-radius: 8px; padding: 6px 10px; font-size: 20px;
+    }
+    .title-main  { font-size: 16px; font-weight: 800; color: #e6edf3; letter-spacing: -0.4px; }
+    .title-sub   { font-size: 11px; color: #58a6ff; font-weight: 600; margin-top: 2px; }
+    .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+    .header-meta  { display: flex; gap: 16px; font-size: 11px; color: #8b949e; }
+    #countdown    { color: #f0a500; font-weight: 700; font-family: monospace; }
+
+    #btn-refresh {
+      padding: 5px 16px; font-size: 11px; font-weight: 700;
+      background: linear-gradient(135deg, #1f6feb, #388bfd);
+      color: #fff; border: 1px solid #30363d; border-radius: 7px;
+      cursor: pointer; box-shadow: 0 0 12px rgba(31,111,235,0.3);
+      transition: opacity .2s;
+    }
+    #btn-refresh:disabled {
+      background: #21262d; color: #6e7681; box-shadow: none; cursor: not-allowed;
+    }
+
+    #progress-wrap { margin-top: 10px; display: none; }
+    #progress-lbl  { font-size: 10px; color: #6e7681; margin-bottom: 4px; }
+    .progress-track { background: #21262d; border-radius: 4px; height: 3px; overflow: hidden; }
+    #progress-fill  {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #1f6feb, #58a6ff);
+      transition: width .4s ease; border-radius: 4px;
+    }
+
+    /* ── CONTROLS ── */
+    #controls {
+      padding: 9px 20px; display: flex; gap: 16px;
+      align-items: center; flex-wrap: wrap;
+      background: #161b22; border-bottom: 1px solid #21262d;
+    }
+    .ctrl-grp  { display: flex; gap: 6px; align-items: center; }
+    .ctrl-lbl  { font-size: 9px; font-weight: 800; color: #6e7681; text-transform: uppercase; letter-spacing: .08em; }
+    #sector-sel {
+      background: #0d1117; color: #c9d1d9;
+      border: 1px solid #30363d; border-radius: 6px;
+      padding: 4px 10px; font-size: 11px; cursor: pointer;
+    }
+    .chip-bar { display: flex; gap: 5px; flex-wrap: wrap; }
+    .chip {
+      padding: 3px 10px; font-size: 10px; font-weight: 600;
+      background: #21262d; color: #8b949e;
+      border: 1px solid #30363d; border-radius: 999px; cursor: pointer;
+      transition: all .15s;
+    }
+    .chip.active { background: #1f6feb; color: #fff; border-color: #388bfd; }
+
+    #stats {
+      margin-left: auto; display: flex; gap: 14px; font-size: 11px; flex-wrap: wrap;
+    }
+    .s-up  { color: #22c55e; }
+    .s-dn  { color: #ef4444; }
+    .s-neu { color: #6e7681; }
+    .s-err { color: #f85149; }
+
+    /* ── TABLE ── */
+    #table-wrap { overflow-x: auto; padding: 12px 20px 0; }
+
+    #tbl {
+      width: 100%; border-collapse: collapse;
+      border: 1px solid #21262d; border-radius: 8px; overflow: hidden;
+    }
+
+    #tbl thead th {
+      padding: 9px 9px; font-size: 9px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .08em; color: #6e7681;
+      background: linear-gradient(180deg, #1a2030 0%, #161b22 100%);
+      border-bottom: 2px solid #21262d; border-right: 1px solid #1c2128;
+      cursor: pointer; user-select: none; white-space: nowrap;
+      position: sticky; top: 0; z-index: 10;
+    }
+    #tbl thead th.active { color: #58a6ff; }
+    #tbl thead th.right  { text-align: right; }
+
+    #tbl tbody tr { border-bottom: 1px solid #1c2128; }
+    #tbl tbody tr.even { background: #0d1117; }
+    #tbl tbody tr.odd  { background: #0f1318; }
+    #tbl tbody tr:hover { background: #1c2128 !important; }
+
+    #tbl tbody td {
+      padding: 7px 9px; font-size: 11px;
+      border-right: 1px solid #1c2128; white-space: nowrap;
+    }
+
+    .sym  { font-weight: 800; color: #58a6ff; font-size: 12px; letter-spacing: .02em; }
+    .nm   { font-size: 9px; color: #484f58; margin-top: 1px; max-width: 160px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sec  { color: #8b949e; font-size: 10px; }
+    .pri  { text-align: right; font-family: monospace; color: #c9d1d9; font-weight: 600; }
+    .pct  { text-align: right; font-family: monospace; }
+    .vol  { text-align: right; font-family: monospace; }
+    .mdd  { text-align: right; font-family: monospace; }
+    .shr  { text-align: right; font-family: monospace; }
+    .rsk  { }
+
+    .badge {
+      display: inline-block; border-radius: 999px; padding: 2px 9px;
+      font-size: 10px; font-weight: 700; border: 1px solid;
+    }
+
+    .empty { text-align: center; padding: 60px !important; color: #484f58; font-size: 13px; }
+
+    /* ── LEGEND ── */
+    #legend {
+      margin: 16px 20px 0; padding: 12px 16px;
+      background: #161b22; border: 1px solid #21262d; border-radius: 8px;
+      font-size: 10px; color: #484f58; line-height: 2;
+    }
+    #legend .leg-title { font-weight: 700; color: #6e7681; margin-bottom: 4px; }
+    .leg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2px 24px;
+    }
+    .leg-grid b { color: #8b949e; }
+    .leg-disc { margin-top: 8px; color: #30363d; }
+    .spacer { height: 30px; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="header-icon">📊</div>
+      <div>
+        <div class="title-main">ETF Monitor</div>
+        <div class="title-sub">Performance Multi-Períodos · 30 ETFs · Yahoo Finance</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-meta">
+        <span>Atualizado: <b id="updated" style="color:#c9d1d9">—</b></span>
+        <span>Próx. refresh: <span id="countdown">05:00</span></span>
+      </div>
+      <button id="btn-refresh" onclick="doFetch()">↻ Atualizar agora</button>
+    </div>
+  </div>
+  <div id="progress-wrap">
+    <div id="progress-lbl">Buscando dados…</div>
+    <div class="progress-track"><div id="progress-fill"></div></div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div id="controls">
+  <div class="ctrl-grp">
+    <span class="ctrl-lbl">Setor</span>
+    <select id="sector-sel" onchange="onSector(this.value)">
+      <option>Todos</option>
+    </select>
+  </div>
+  <div class="chip-bar" id="chips">
+    <button class="chip" onclick="quickSort('day')">Dia</button>
+    <button class="chip" onclick="quickSort('week')">Semana</button>
+    <button class="chip" onclick="quickSort('ytd')">YTD</button>
+    <button class="chip active" onclick="quickSort('oneYear')">1 Ano</button>
+    <button class="chip" onclick="quickSort('vol30')">Volatilidade</button>
+    <button class="chip" onclick="quickSort('sharpe')">Sharpe</button>
+  </div>
+  <div id="stats"></div>
+</div>
+
+<!-- TABLE -->
+<div id="table-wrap">
+  <table id="tbl">
+    <thead><tr id="thead"></tr></thead>
+    <tbody id="tbody">
+      <tr><td class="empty" colspan="17">Iniciando busca de dados…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- LEGEND -->
+<div id="legend">
+  <div class="leg-title">📖 DICIONÁRIO DOS INDICADORES</div>
+  <div class="leg-grid">
+    <span><b>Vol 30d</b> = Volatilidade anualizada (σ log-retornos 30 pregões × √252)</span>
+    <span><b>Vol 1A</b>  = Volatilidade anualizada (σ log-retornos 252 pregões × √252)</span>
+    <span><b>MDD 1A</b>  = Máximo Drawdown 1 ano — queda máx. pico→vale</span>
+    <span><b>Sharpe</b>  ≈ (Retorno 1A − 5% livre de risco) / Vol 1A  · &gt;1 = bom</span>
+    <span><b>Risco:</b>  Baixo &lt;12% · Médio 12–20% · Alto 20–35% · Muito Alto &gt;35%</span>
+    <span><b>Períodos:</b> Dia=1 · Sem=5 · 15d=10 · Mês=21 · 3M=63 · 6M=126 · 1A=252 · 2A=504 pregões</span>
+  </div>
+  <div class="leg-disc">⚠ Dados via Yahoo Finance com proxy CORS. Preços com possível defasagem. Não constitui recomendação de investimento. Auto-atualização a cada 5 min.</div>
+</div>
+<div class="spacer"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   ETF UNIVERSE
+══════════════════════════════════════════════════════════════════ */
+const ETF_LIST = [
+  { symbol:'SPY',  name:'SPDR S&P 500 ETF',                   sector:'Mercado Amplo' },
+  { symbol:'QQQ',  name:'Invesco Nasdaq-100 ETF',              sector:'Tecnologia' },
+  { symbol:'IWM',  name:'iShares Russell 2000 ETF',            sector:'Small Cap' },
+  { symbol:'DIA',  name:'SPDR Dow Jones Industrial ETF',       sector:'Mercado Amplo' },
+  { symbol:'VTI',  name:'Vanguard Total Stock Market ETF',     sector:'Mercado Amplo' },
+  { symbol:'XLK',  name:'Technology Select Sector SPDR',       sector:'Tecnologia' },
+  { symbol:'XLF',  name:'Financial Select Sector SPDR',        sector:'Financeiro' },
+  { symbol:'XLE',  name:'Energy Select Sector SPDR',           sector:'Energia' },
+  { symbol:'XLV',  name:'Health Care Select Sector SPDR',      sector:'Saúde' },
+  { symbol:'XLI',  name:'Industrial Select Sector SPDR',       sector:'Industrial' },
+  { symbol:'XLC',  name:'Comm. Services Select Sector SPDR',   sector:'Comunicação' },
+  { symbol:'XLY',  name:'Consumer Discr. Select SPDR',         sector:'Cons. Discrecional' },
+  { symbol:'XLP',  name:'Consumer Staples Select SPDR',        sector:'Cons. Básico' },
+  { symbol:'XLRE', name:'Real Estate Select Sector SPDR',      sector:'Imobiliário' },
+  { symbol:'XLU',  name:'Utilities Select Sector SPDR',        sector:'Utilities' },
+  { symbol:'XLB',  name:'Materials Select Sector SPDR',        sector:'Materiais' },
+  { symbol:'GLD',  name:'SPDR Gold Shares',                    sector:'Ouro' },
+  { symbol:'SLV',  name:'iShares Silver Trust',                sector:'Prata' },
+  { symbol:'GDX',  name:'VanEck Gold Miners ETF',              sector:'Mineração' },
+  { symbol:'TLT',  name:'iShares 20+ Year Treasury Bond ETF',  sector:'Renda Fixa' },
+  { symbol:'AGG',  name:'iShares Core US Aggregate Bond ETF',  sector:'Renda Fixa' },
+  { symbol:'HYG',  name:'iShares iBoxx High Yield Corp Bond',  sector:'High Yield' },
+  { symbol:'VEA',  name:'Vanguard FTSE Developed Markets ETF', sector:'Internacional' },
+  { symbol:'VWO',  name:'Vanguard FTSE Emerging Markets ETF',  sector:'Emergentes' },
+  { symbol:'EEM',  name:'iShares MSCI Emerging Markets ETF',   sector:'Emergentes' },
+  { symbol:'SOXX', name:'iShares Semiconductor ETF',           sector:'Semicondutores' },
+  { symbol:'SMH',  name:'VanEck Semiconductor ETF',            sector:'Semicondutores' },
+  { symbol:'ARKK', name:'ARK Innovation ETF',                  sector:'Inovação' },
+  { symbol:'IBIT', name:'iShares Bitcoin Trust ETF',           sector:'Cripto' },
+  { symbol:'VNQ',  name:'Vanguard Real Estate ETF',            sector:'Imobiliário' },
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════════ */
+const S = {
+  rows: [], errors: [], updated: null,
+  sortBy: 'oneYear', sortDir: 'desc',
+  sector: 'Todos', loading: false,
+  pct: 0, cd: 300,
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   FETCH
+══════════════════════════════════════════════════════════════════ */
+async function timedFetch(url, ms = 12000) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  try { return await fetch(url, { signal: ctrl.signal }); }
+  finally { clearTimeout(id); }
+}
+
+const PROXIES = [
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+];
+
+async function fetchChart(symbol) {
+  const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=2y`;
+  for (const mk of PROXIES) {
+    try {
+      const res = await timedFetch(mk(yUrl));
+      if (!res.ok) continue;
+      const json = await res.json();
+      const r = json?.chart?.result?.[0];
+      if (r?.indicators?.quote?.[0]?.close) return r;
+    } catch (_) {}
+  }
+  throw new Error('no data');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROCESS
+══════════════════════════════════════════════════════════════════ */
+function processETF(meta, raw) {
+  const rawC = raw.indicators.adjclose?.[0]?.adjclose || raw.indicators.quote[0].close;
+  const pairs = raw.timestamp
+    .map((t, i) => [t, rawC[i]])
+    .filter(([, c]) => c != null && isFinite(c));
+  if (pairs.length < 5) throw new Error('insufficient');
+
+  const ts = pairs.map(p => p[0]);
+  const cs = pairs.map(p => p[1]);
+  const last = cs[cs.length - 1];
+  const n = cs.length;
+
+  const ret = d => ((last / cs[Math.max(0, n - 1 - d)]) - 1) * 100;
+
+  // YTD
+  const ytdTs = new Date(new Date().getFullYear(), 0, 1).getTime() / 1000;
+  const ytdI  = ts.findIndex(t => t >= ytdTs);
+  const ytd   = ytdI >= 0 ? ((last / cs[ytdI]) - 1) * 100 : ret(252);
+
+  // Volatility helper
+  function calcVol(slice) {
+    const lr = [];
+    for (let j = 1; j < slice.length; j++) {
+      if (slice[j] && slice[j-1]) lr.push(Math.log(slice[j] / slice[j-1]));
+    }
+    if (!lr.length) return null;
+    const mu  = lr.reduce((a, b) => a + b, 0) / lr.length;
+    const va  = lr.reduce((a, b) => a + (b - mu) ** 2, 0) / lr.length;
+    return parseFloat((Math.sqrt(va * 252) * 100).toFixed(1));
+  }
+
+  const vol30  = calcVol(cs.slice(Math.max(0, n - 31)));
+  const vol252 = calcVol(cs.slice(Math.max(0, n - 253)));
+
+  // Max drawdown 1Y
+  const yr = cs.slice(Math.max(0, n - 252));
+  let pk = yr[0], mdd = 0;
+  for (const c of yr) {
+    if (c > pk) pk = c;
+    const dd = ((c - pk) / pk) * 100;
+    if (dd < mdd) mdd = dd;
+  }
+
+  // Sharpe (~1Y, rf=5%)
+  const r1y    = n > 10 ? ret(Math.min(n-1, 252)) : null;
+  const sharpe = (vol252 && r1y != null) ? parseFloat(((r1y - 5) / vol252).toFixed(2)) : null;
+
+  const risk = vol30 == null ? { riskLabel:'–', riskColor:'#484f58', riskN:0 }
+    : vol30 < 12 ? { riskLabel:'Baixo',     riskColor:'#22c55e', riskN:1 }
+    : vol30 < 20 ? { riskLabel:'Médio',     riskColor:'#eab308', riskN:2 }
+    : vol30 < 35 ? { riskLabel:'Alto',      riskColor:'#f97316', riskN:3 }
+    :               { riskLabel:'Muito Alto', riskColor:'#ef4444', riskN:4 };
+
+  return {
+    price: parseFloat(last.toFixed(2)),
+    day: ret(1), week: ret(5), biweekly: ret(10),
+    month: ret(21), threeMonth: ret(63), sixMonth: ret(126),
+    ytd,
+    oneYear:  n > 10  ? ret(Math.min(n-1, 252)) : null,
+    twoYear:  n > 126 ? ret(Math.min(n-1, 504)) : null,
+    vol30, vol252,
+    maxDD:  parseFloat(mdd.toFixed(1)),
+    sharpe, ...risk,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COLOURS
+══════════════════════════════════════════════════════════════════ */
+function retStyle(v) {
+  if (v == null || !isFinite(v)) return ['#484f58', 'transparent', 400];
+  const a = Math.abs(v);
+  const pos = v > 0;
+  let color, bg;
+  if (pos) {
+    if (a>20)      { color='#00e676'; bg='rgba(0,230,118,.12)'; }
+    else if (a>10) { color='#22c55e'; bg='rgba(34,197,94,.09)'; }
+    else if (a>3)  { color='#4ade80'; bg='rgba(74,222,128,.06)'; }
+    else if (a>.5) { color='#86efac'; bg='transparent'; }
+    else           { color='#6e7681'; bg='transparent'; }
+  } else {
+    if (a>20)      { color='#ff3333'; bg='rgba(255,51,51,.12)'; }
+    else if (a>10) { color='#ef4444'; bg='rgba(239,68,68,.09)'; }
+    else if (a>3)  { color='#f87171'; bg='rgba(248,113,113,.06)'; }
+    else if (a>.5) { color='#fca5a5'; bg='transparent'; }
+    else           { color='#6e7681'; bg='transparent'; }
+  }
+  return [color, bg, a>10 ? 700 : 400];
+}
+
+function pctTd(v) {
+  if (v == null || !isFinite(v)) return `<td class="pct" style="color:#484f58">–</td>`;
+  const [c, bg, fw] = retStyle(v);
+  const sign = v > 0 ? '+' : '';
+  return `<td class="pct" style="color:${c};background:${bg};font-weight:${fw}">${sign}${v.toFixed(2)}%</td>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COLUMNS
+══════════════════════════════════════════════════════════════════ */
+const COLS = [
+  { k:'symbol',     lbl:'ETF',    right:false, w:140 },
+  { k:'sector',     lbl:'Setor',  right:false, w:120 },
+  { k:'price',      lbl:'Preço',  right:true,  w:80  },
+  { k:'day',        lbl:'Dia',    right:true,  w:68  },
+  { k:'week',       lbl:'Semana', right:true,  w:72  },
+  { k:'biweekly',   lbl:'15d',    right:true,  w:64  },
+  { k:'month',      lbl:'Mês',    right:true,  w:68  },
+  { k:'threeMonth', lbl:'3M',     right:true,  w:64  },
+  { k:'sixMonth',   lbl:'6M',     right:true,  w:64  },
+  { k:'ytd',        lbl:'YTD',    right:true,  w:72  },
+  { k:'oneYear',    lbl:'1 Ano',  right:true,  w:72  },
+  { k:'twoYear',    lbl:'2 Anos', right:true,  w:72  },
+  { k:'vol30',      lbl:'Vol 30d',right:true,  w:72  },
+  { k:'vol252',     lbl:'Vol 1A', right:true,  w:68  },
+  { k:'maxDD',      lbl:'MDD 1A', right:true,  w:68  },
+  { k:'sharpe',     lbl:'Sharpe', right:true,  w:68  },
+  { k:'riskLabel',  lbl:'Risco',  right:false, w:88  },
+];
+
+const PERIOD_KEYS = ['day','week','biweekly','month','threeMonth','sixMonth','ytd','oneYear','twoYear'];
+const RISK_ORD    = { 'Baixo':1, 'Médio':2, 'Alto':3, 'Muito Alto':4 };
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN FETCH
+══════════════════════════════════════════════════════════════════ */
+async function doFetch() {
+  if (S.loading) return;
+  S.loading = true; S.errors = []; S.rows = []; S.pct = 0;
+  setLoadUI(true);
+
+  const results = [], errs = [], BATCH = 5;
+
+  for (let i = 0; i < ETF_LIST.length; i += BATCH) {
+    const batch   = ETF_LIST.slice(i, i + BATCH);
+    const settled = await Promise.allSettled(batch.map(m => fetchChart(m.symbol)));
+    settled.forEach((res, j) => {
+      const m = batch[j];
+      if (res.status === 'fulfilled') {
+        try { results.push({ ...m, ...processETF(m, res.value) }); }
+        catch { errs.push(m.symbol); }
+      } else { errs.push(m.symbol); }
+    });
+    S.pct = Math.round((Math.min(i + BATCH, ETF_LIST.length) / ETF_LIST.length) * 100);
+    document.getElementById('progress-fill').style.width = S.pct + '%';
+    document.getElementById('progress-lbl').textContent  =
+      `Buscando dados: ${Math.round(S.pct * ETF_LIST.length / 100)}/${ETF_LIST.length} ETFs`;
+    document.getElementById('btn-refresh').textContent = `↻ ${S.pct}%…`;
+    if (i + BATCH < ETF_LIST.length) await sleep(450);
+  }
+
+  S.rows    = results;
+  S.errors  = errs;
+  S.updated = new Date();
+  S.loading = false;
+  S.cd      = 300;
+  setLoadUI(false);
+  populateSectors();
+  render();
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setLoadUI(on) {
+  document.getElementById('btn-refresh').disabled = on;
+  document.getElementById('progress-wrap').style.display = on ? 'block' : 'none';
+  if (on) document.getElementById('tbody').innerHTML =
+    `<tr><td class="empty" colspan="17">⏳ Buscando dados… ${S.pct}% concluído</td></tr>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SORT / FILTER
+══════════════════════════════════════════════════════════════════ */
+function getDisplayed() {
+  const f = S.rows.filter(r => S.sector === 'Todos' || r.sector === S.sector);
+  return [...f].sort((a, b) => {
+    const k = S.sortBy;
+    if (k === 'symbol' || k === 'sector') {
+      const as = String(a[k]??''), bs = String(b[k]??'');
+      return S.sortDir === 'asc' ? as.localeCompare(bs) : bs.localeCompare(as);
+    }
+    if (k === 'riskLabel') {
+      const av = RISK_ORD[a.riskLabel]??0, bv = RISK_ORD[b.riskLabel]??0;
+      return S.sortDir === 'desc' ? bv - av : av - bv;
+    }
+    const av = a[k]??-Infinity, bv = b[k]??-Infinity;
+    return S.sortDir === 'desc' ? bv - av : av - bv;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════════════════════════════ */
+function render() {
+  buildHeader();
+  const rows = getDisplayed();
+  buildBody(rows);
+  buildStats(rows);
+  updateChips();
+  if (S.updated) document.getElementById('updated').textContent =
+    S.updated.toLocaleTimeString('pt-BR');
+}
+
+function buildHeader() {
+  document.getElementById('thead').innerHTML = COLS.map(c => {
+    const active = S.sortBy === c.k;
+    const arrow  = active ? (S.sortDir === 'desc' ? ' ▼' : ' ▲') : ' ⇅';
+    const aColor = active ? '#58a6ff' : '#30363d';
+    return `<th class="${active?'active':''} ${c.right?'right':''}"
+               style="min-width:${c.w}px"
+               onclick="handleSort('${c.k}')">
+      ${c.lbl}<span style="color:${aColor};margin-left:2px">${arrow}</span>
+    </th>`;
+  }).join('');
+}
+
+function buildBody(rows) {
+  if (!rows.length) {
+    document.getElementById('tbody').innerHTML =
+      `<tr><td class="empty" colspan="17">
+        ${S.errors.length ? '⚠ Falha ao carregar dados. Verifique conexão e tente atualizar.' : 'Sem dados.'}
+      </td></tr>`;
+    return;
+  }
+  document.getElementById('tbody').innerHTML = rows.map((r, i) => {
+    // vol colors
+    const vC30  = r.vol30  > 35 ? '#f97316' : r.vol30  > 20 ? '#eab308' : '#8b949e';
+    const vC252 = r.vol252 > 35 ? '#f97316' : r.vol252 > 20 ? '#eab308' : '#8b949e';
+    const mddC  = r.maxDD < -20 ? '#ff3333' : r.maxDD < -10 ? '#ef4444' : '#f87171';
+    const shrC  = r.sharpe == null ? '#484f58'
+                : r.sharpe > 1    ? '#22c55e'
+                : r.sharpe > 0    ? '#eab308'
+                :                   '#ef4444';
+    return `<tr class="${i%2===0?'even':'odd'}">
+      <td>
+        <div class="sym">${r.symbol}</div>
+        <div class="nm" title="${r.name}">${r.name}</div>
+      </td>
+      <td class="sec">${r.sector}</td>
+      <td class="pri">$${r.price!=null ? r.price.toFixed(2) : '–'}</td>
+      ${PERIOD_KEYS.map(k => pctTd(r[k])).join('')}
+      <td class="vol" style="color:${vC30}">${r.vol30!=null ? r.vol30+'%' : '–'}</td>
+      <td class="vol" style="color:${vC252}">${r.vol252!=null ? r.vol252+'%' : '–'}</td>
+      <td class="mdd" style="color:${mddC}">${r.maxDD!=null ? r.maxDD+'%' : '–'}</td>
+      <td class="shr" style="color:${shrC}">${r.sharpe!=null ? r.sharpe.toFixed(2) : '–'}</td>
+      <td class="rsk">
+        <span class="badge"
+          style="background:${r.riskColor}1e;color:${r.riskColor};border-color:${r.riskColor}44">
+          ${r.riskLabel}
+        </span>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function buildStats(rows) {
+  const up  = rows.filter(r => r.day > 0).length;
+  const dn  = rows.filter(r => r.day < 0).length;
+  const err = S.errors.length
+    ? `<span class="s-err">⚠ Falha: ${S.errors.join(' · ')}</span>` : '';
+  document.getElementById('stats').innerHTML =
+    `<span class="s-up">▲ ${up} em alta</span>
+     <span class="s-dn">▼ ${dn} em baixa</span>
+     <span class="s-neu">${rows.length} exibidos</span>${err}`;
+}
+
+function updateChips() {
+  document.querySelectorAll('.chip').forEach(btn => {
+    const k = btn.getAttribute('onclick').replace(/quickSort\('|'\)/g,'');
+    btn.classList.toggle('active', k === S.sortBy);
+  });
+}
+
+function populateSectors() {
+  const sectors = ['Todos', ...new Set(ETF_LIST.map(e => e.sector))].sort();
+  document.getElementById('sector-sel').innerHTML =
+    sectors.map(s => `<option${s===S.sector?' selected':''}>${s}</option>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EVENTS
+══════════════════════════════════════════════════════════════════ */
+function handleSort(k) {
+  if (S.sortBy === k) S.sortDir = S.sortDir === 'desc' ? 'asc' : 'desc';
+  else { S.sortBy = k; S.sortDir = 'desc'; }
+  render();
+}
+function quickSort(k) { handleSort(k); }
+function onSector(v)  { S.sector = v; render(); }
+
+/* ═══════════════════════════════════════════════════════════════
+   COUNTDOWN + AUTO-REFRESH
+══════════════════════════════════════════════════════════════════ */
+setInterval(() => {
+  if (S.loading) return;
+  S.cd--;
+  if (S.cd <= 0) { doFetch(); return; }
+  const m = String(Math.floor(S.cd/60)).padStart(2,'0');
+  const s = String(S.cd%60).padStart(2,'0');
+  document.getElementById('countdown').textContent = `${m}:${s}`;
+}, 1000);
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════════ */
+buildHeader();
+doFetch();
+</script>
+</body>
+</html>
