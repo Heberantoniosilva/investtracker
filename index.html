@@ -119,12 +119,11 @@ input:focus,select:focus{border-color:var(--acc2)}
 @media(max-width:880px){.intel-g2{grid-template-columns:1fr!important}}
 #toast{position:fixed;bottom:24px;right:24px;background:#06d6a0;color:#000;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;display:none;animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-/* ═══ ETF RADAR ═══ */
+/* ═ ETF RADAR ═ */
 .er-chip{display:inline-block;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:700;border:1px solid;}
 .er-liq{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;border:1px solid;}
 .er-sk{animation:ersk 1.4s infinite;background:linear-gradient(90deg,#21262d 25%,#2d333b 50%,#21262d 75%);background-size:200% 100%;border-radius:3px;height:11px;display:inline-block;vertical-align:middle;}
 @keyframes ersk{0%{background-position:200% 0}100%{background-position:-200% 0}}
-/* ═══ END ETF RADAR CSS ═══ */
 </style>
 </head>
 <body>
@@ -542,7 +541,7 @@ input:focus,select:focus{border-color:var(--acc2)}
         <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Esta ação apaga todos os dados e não pode ser desfeita. Exporte um backup antes.</div>
         <button class="btn btn-danger btn-sm" onclick="if(confirm('Tem certeza? Esta ação apaga TODOS os dados permanentemente.'))clearAll()"><i class="ti ti-trash"></i> Limpar todos os dados</button>
       </div>
-    <!-- ═══ ETF RADAR PAGE ═══ -->
+    <!-- ═ ETF RADAR PAGE ═ -->
     <div id="page-etfradar" class="page">
       <div class="flex-between" style="margin-bottom:14px">
         <div class="section-title" style="margin:0"><i class="ti ti-radar"></i> ETF Radar — Oportunidades</div>
@@ -558,9 +557,9 @@ input:focus,select:focus{border-color:var(--acc2)}
         <div class="progress-bar"><div id="er-pfill" class="progress-fill" style="background:var(--acc2);width:0%"></div></div>
       </div>
       <div id="er-notice-ai" class="alert-info" style="display:none;margin-bottom:10px;font-size:12px">
-        🤖 <b>Modo IA</b> — dados aproximados via Claude (knowledge cutoff ago/2025). Para dados ao vivo verifique sua conexão.
+        🤖 <b>Modo IA</b> — dados aproximados via Claude (knowledge cutoff ago/2025).
       </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
         <div style="display:flex;gap:4px;flex-wrap:wrap" id="er-cats"></div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
@@ -582,26 +581,25 @@ input:focus,select:focus{border-color:var(--acc2)}
       <div class="card" style="padding:0;overflow-x:auto">
         <table id="er-tbl">
           <thead><tr id="er-thead"></tr></thead>
-          <tbody id="er-tbody"><tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text2)">Clique em Atualizar para carregar o Radar.</td></tr></tbody>
+          <tbody id="er-tbody"><tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text2)">Clique em <b>Atualizar</b> para carregar o ETF Radar.</td></tr></tbody>
         </table>
       </div>
       <div style="margin-top:10px;font-size:10px;color:var(--text2);line-height:1.9">
-        <b style="color:var(--text)">Categorias de risco:</b>
-        <span style="color:#bc8cff">■ Single Stock 2x</span> ETF alavancado 2× em uma ação ·
-        <span style="color:#ef476f">■ Setor 3x</span> alavancado 3× em setor ·
-        <span style="color:#f0a500">■ Temático</span> sem alavancagem ·
+        <b style="color:var(--text)">Risco por categoria:</b>
+        <span style="color:#bc8cff">■ Single Stock 2x</span> ·
+        <span style="color:#ef476f">■ Setor 3x</span> ·
+        <span style="color:#f0a500">■ Temático</span> ·
         <span style="color:#ffd166">■ Cripto</span> ·
-        <span style="color:var(--acc2)">■ Mercado Amplo</span> referência ·
-        <span style="color:var(--green)">■ Renda/Hedge</span><br>
+        <span style="color:var(--acc2)">■ Mercado Amplo</span> ·
+        <span style="color:var(--green)">■ Renda/Hedge</span> ·
         <b style="color:var(--text)">Liquidez:</b>
-        <span style="color:var(--green)">●Alta</span> &gt;1M vol/dia ·
+        <span style="color:var(--green)">●Alta</span> &gt;1M ·
         <span style="color:var(--amber)">●Média</span> 100k–1M ·
-        <span style="color:var(--red)">●Baixa</span> &lt;100k ·
-        <b style="color:var(--text)">AUM</b> patrimônio total ·
-        <b style="color:var(--text)">MDD 1A</b> máximo drawdown 1 ano
+        <span style="color:var(--red)">●Baixa</span> &lt;100k/dia ·
+        <b style="color:var(--text)">MDD 1A</b> = máximo drawdown 1 ano
       </div>
     </div>
-    <!-- ═══ END ETF RADAR PAGE ═══ -->
+    <!-- ═ END ETF RADAR PAGE ═ -->
 
   </div>
 </div>
@@ -1807,9 +1805,8 @@ if(localStorage.getItem('it_fmp_key')){document.getElementById('i-fmp-status').t
 // ============================================================
 
 // ═══════════════════════════════════════════════════════════
-// ETF RADAR MODULE — altere somente entre estas marcações
+// ETF RADAR — altere somente entre estas marcações
 // ═══════════════════════════════════════════════════════════
-
 const ER_LIST_DEFAULT=[
   {symbol:'MUU', name:'Direxion Daily MU Bull 2X',         cat:'Single Stock 2x'},
   {symbol:'NVDL',name:'GraniteShares 2x Long NVDA',        cat:'Single Stock 2x'},
@@ -1851,28 +1848,21 @@ const ER_CATS={
 const ER_CAT_ORDER=['Single Stock 2x','Setor 3x','Temático','Cripto','Mercado Amplo','Renda/Hedge'];
 const ER_PKEYS=['day','week','month','threeMonth','ytd','oneYear'];
 const ER_COLS=[
-  {k:'symbol',    lbl:'ETF',     r:false,w:135},{k:'cat',       lbl:'Categ.',  r:false,w:105},
-  {k:'price',     lbl:'Preço',   r:true, w:72}, {k:'day',       lbl:'Dia',     r:true, w:65},
-  {k:'week',      lbl:'Semana',  r:true, w:70}, {k:'month',     lbl:'Mês',     r:true, w:65},
-  {k:'threeMonth',lbl:'3M',      r:true, w:62}, {k:'ytd',       lbl:'YTD',     r:true, w:78},
-  {k:'oneYear',   lbl:'1 Ano',   r:true, w:78}, {k:'vol30',     lbl:'Vol 30d', r:true, w:70},
-  {k:'maxDD',     lbl:'MDD 1A',  r:true, w:68}, {k:'liqLabel',  lbl:'Liquidez',r:false,w:76},
-  {k:'aum',       lbl:'AUM',     r:true, w:76}, {k:'vol3m',     lbl:'Vol 3M',  r:true, w:72},
+  {k:'symbol',lbl:'ETF',r:false,w:135},{k:'cat',lbl:'Categ.',r:false,w:105},
+  {k:'price',lbl:'Preço',r:true,w:72},{k:'day',lbl:'Dia',r:true,w:65},
+  {k:'week',lbl:'Semana',r:true,w:70},{k:'month',lbl:'Mês',r:true,w:65},
+  {k:'threeMonth',lbl:'3M',r:true,w:62},{k:'ytd',lbl:'YTD',r:true,w:78},
+  {k:'oneYear',lbl:'1 Ano',r:true,w:78},{k:'vol30',lbl:'Vol 30d',r:true,w:70},
+  {k:'maxDD',lbl:'MDD 1A',r:true,w:68},{k:'liqLabel',lbl:'Liquidez',r:false,w:76},
+  {k:'aum',lbl:'AUM',r:true,w:76},{k:'vol3m',lbl:'Vol 3M',r:true,w:72},
 ];
 const ER_PROXIES=[
-  {name:'AllOrigins/get',
-   make:u=>`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
-   parse:async r=>{const d=await r.json();return JSON.parse(d.contents);}},
-  {name:'CorsProxy.io',
-   make:u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,parse:r=>r.json()},
-  {name:'AllOrigins/raw',
-   make:u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,parse:r=>r.json()},
-  {name:'CodeTabs',
-   make:u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,parse:r=>r.json()},
-  {name:'ThingProxy',
-   make:u=>`https://thingproxy.freeboard.io/fetch/${u}`,parse:r=>r.json()},
+  {name:'AllOrigins',make:u=>`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,parse:async r=>{const d=await r.json();return JSON.parse(d.contents);}},
+  {name:'CorsProxy',make:u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,parse:r=>r.json()},
+  {name:'AllOrigins/raw',make:u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,parse:r=>r.json()},
+  {name:'CodeTabs',make:u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,parse:r=>r.json()},
+  {name:'ThingProxy',make:u=>`https://thingproxy.freeboard.io/fetch/${u}`,parse:r=>r.json()},
 ];
-
 let erList=[...ER_LIST_DEFAULT],erRows=[],erErrors=[],erUpdated=null;
 let erSortBy='ytd',erSortDir='desc',erFilterCat='Todos';
 let erLoading=false,erPct=0,erCd=300,erMode='',erActiveProxy=null,erCdTimer=null;
@@ -1882,42 +1872,25 @@ const erSleep=ms=>new Promise(r=>setTimeout(r,ms));
 function erFmtVol(v){if(v==null)return'–';if(v>=1e9)return(v/1e9).toFixed(1)+'B';if(v>=1e6)return(v/1e6).toFixed(1)+'M';if(v>=1e3)return(v/1e3).toFixed(0)+'k';return String(v);}
 function erFmtAum(v){if(v==null)return'–';if(v>=1e12)return'$'+(v/1e12).toFixed(1)+'T';if(v>=1e9)return'$'+(v/1e9).toFixed(1)+'B';if(v>=1e6)return'$'+(v/1e6).toFixed(0)+'M';return'$'+v;}
 function erLiqInfo(vol){if(vol==null)return{label:'–',color:'#484f58'};if(vol>1e6)return{label:'Alta',color:'#06d6a0'};if(vol>1e5)return{label:'Média',color:'#ffd166'};return{label:'Baixa',color:'#ef476f'};}
-
 async function erFindProxy(){
   const test='https://query1.finance.yahoo.com/v8/finance/chart/SPY?interval=1d&range=5d';
-  for(const p of ER_PROXIES){
-    erSetBadge(`testando ${p.name}…`);
-    try{const res=await erTF(p.make(test),7000);if(!res.ok)continue;const j=await p.parse(res);if(j?.chart?.result?.[0]){erActiveProxy=p;erSetBadge('✓ '+p.name,'#06d6a0');return true;}}catch(_){}
-  }
+  for(const p of ER_PROXIES){erSetBadge('testando '+p.name+'…');try{const res=await erTF(p.make(test),7000);if(!res.ok)continue;const j=await p.parse(res);if(j?.chart?.result?.[0]){erActiveProxy=p;erSetBadge('✓ '+p.name,'#06d6a0');return true;}}catch(_){}}
   return false;
 }
-async function erFetchBatchQuote(syms){
-  for(const srv of['query1','query2']){
-    const u=`https://${srv}.finance.yahoo.com/v7/finance/quote?symbols=${syms.join(',')}`;
-    try{const res=await erTF(erActiveProxy.make(u),12000);if(!res.ok)continue;const j=await erActiveProxy.parse(res);const r=j?.quoteResponse?.result;if(r?.length)return r;}catch(_){}
-  }
-  return[];
-}
-async function erFetchChart(sym){
-  for(const srv of['query1','query2']){
-    const u=`https://${srv}.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=2y`;
-    try{const res=await erTF(erActiveProxy.make(u),12000);if(!res.ok)continue;const j=await erActiveProxy.parse(res);const r=j?.chart?.result?.[0];if(r?.indicators?.quote?.[0]?.close)return r;}catch(_){}
-  }
-  throw new Error('no data');
-}
-function erProcessQuote(q){const vol3m=q.averageVolume||null;const liq=erLiqInfo(vol3m);return{price:q.regularMarketPrice??null,day:q.regularMarketChangePercent??null,vol3m,aum:q.totalAssets??null,liqLabel:liq.label,liqColor:liq.color};}
+async function erFetchBatchQuote(syms){for(const srv of['query1','query2']){const u='https://'+srv+'.finance.yahoo.com/v7/finance/quote?symbols='+syms.join(',');try{const res=await erTF(erActiveProxy.make(u),12000);if(!res.ok)continue;const j=await erActiveProxy.parse(res);const r=j?.quoteResponse?.result;if(r?.length)return r;}catch(_){}}return[];}
+async function erFetchChart(sym){for(const srv of['query1','query2']){const u='https://'+srv+'.finance.yahoo.com/v8/finance/chart/'+sym+'?interval=1d&range=2y';try{const res=await erTF(erActiveProxy.make(u),12000);if(!res.ok)continue;const j=await erActiveProxy.parse(res);const r=j?.chart?.result?.[0];if(r?.indicators?.quote?.[0]?.close)return r;}catch(_){}}throw new Error('no data');}
+function erProcessQuote(q){const v=q.averageVolume||null;const l=erLiqInfo(v);return{price:q.regularMarketPrice??null,day:q.regularMarketChangePercent??null,vol3m:v,aum:q.totalAssets??null,liqLabel:l.label,liqColor:l.color};}
 function erProcessChart(raw){
   const rawC=raw.indicators.adjclose?.[0]?.adjclose||raw.indicators.quote[0].close;
   const pairs=raw.timestamp.map((t,i)=>[t,rawC[i]]).filter(([,c])=>c!=null&&isFinite(c));
   if(pairs.length<5)throw new Error('insufficient');
   const ts=pairs.map(p=>p[0]),cs=pairs.map(p=>p[1]),last=cs[cs.length-1],n=cs.length;
   const ret=d=>((last/cs[Math.max(0,n-1-d)])-1)*100;
-  const ytdTs=new Date(new Date().getFullYear(),0,1).getTime()/1000;
-  const ytdI=ts.findIndex(t=>t>=ytdTs);
+  const ytdI=ts.findIndex(t=>t>=new Date(new Date().getFullYear(),0,1).getTime()/1000);
   const ytd=ytdI>=0?((last/cs[ytdI])-1)*100:ret(252);
   const s30=cs.slice(Math.max(0,n-31)),lr30=[];
   for(let j=1;j<s30.length;j++)if(s30[j]&&s30[j-1])lr30.push(Math.log(s30[j]/s30[j-1]));
-  const mu=lr30.reduce((a,b)=>a+b,0)/lr30.length;
+  const mu=lr30.reduce((a,b)=>a+b,0)/(lr30.length||1);
   const vol30=lr30.length?parseFloat((Math.sqrt(lr30.reduce((a,b)=>a+(b-mu)**2,0)/lr30.length*252)*100).toFixed(1)):null;
   const yr=cs.slice(Math.max(0,n-252));let pk=yr[0],mdd=0;
   for(const c of yr){if(c>pk)pk=c;const dd=((c-pk)/pk)*100;if(dd<mdd)mdd=dd;}
@@ -1925,136 +1898,104 @@ function erProcessChart(raw){
 }
 async function erFetchViaAI(syms){
   const key=localStorage.getItem('it_apikey')||'';
-  const headers={'Content-Type':'application/json'};if(key)headers['x-api-key']=key;
-  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers,
+  const h={'Content-Type':'application/json'};if(key)h['x-api-key']=key;
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:h,
     body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,
       system:'Financial assistant. Return ONLY a valid JSON array. No markdown.',
-      messages:[{role:'user',content:`ETF data for June 2026: ${syms.join(', ')}.
-Return ONLY JSON array: [{"symbol":"MUU","price":null,"day":null,"week":null,"month":null,"ytd":null,"oneYear":null}]
-MUU=2x Micron ~+4000% since Oct 2024 launch. Fill what you know, null otherwise.`}]})});
+      messages:[{role:'user',content:'ETF data June 2026: '+syms.join(', ')+'. Return ONLY JSON: [{"symbol":"MUU","price":null,"day":null,"week":null,"month":null,"ytd":null,"oneYear":null}]. Fill what you know. Use null for unknowns.'}]})});
   if(!r.ok)throw new Error('API '+r.status);
   const data=await r.json();
   const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
   const match=text.match(/\[[\s\S]*\]/);if(!match)throw new Error('no json');
   return JSON.parse(match[0]);
 }
-
 async function erDoFetch(){
-  if(erLoading)return;
-  erLoading=true;erErrors=[];erPct=0;
-  document.getElementById('er-notice-ai').style.display='none';
+  if(erLoading)return;erLoading=true;erErrors=[];erPct=0;
+  const nai=document.getElementById('er-notice-ai');if(nai)nai.style.display='none';
   erSetLoadUI(true,'Detectando proxy…');
   const ok=await erFindProxy();
   if(ok){erMode='proxy';await erRunProxyFetch();}
-  else{
-    const key=localStorage.getItem('it_apikey')||'';
-    if(key){erMode='ai';erSetBadge('🤖 Modo IA','#bc8cff');document.getElementById('er-notice-ai').style.display='block';await erRunAIFetch();}
-    else{erSetBadge('✗ sem acesso','#ef476f');erLoading=false;erSetLoadUI(false);toast('ETF Radar: proxy indisponível. Verifique sua conexão ou chave API em Config.');return;}
-  }
+  else{const key=localStorage.getItem('it_apikey')||'';if(key){erMode='ai';erSetBadge('🤖 Modo IA','#bc8cff');if(nai)nai.style.display='block';await erRunAIFetch();}else{erSetBadge('✗ sem proxy','#ef476f');erLoading=false;erSetLoadUI(false);toast('ETF Radar: proxy indisponível. Verifique conexão.');return;}}
   erUpdated=new Date();erLoading=false;erCd=300;erSetLoadUI(false);erRender();
-  document.getElementById('er-updated').textContent='Atualizado '+erUpdated.toLocaleTimeString('pt-BR');
+  const upd=document.getElementById('er-updated');if(upd)upd.textContent='Atualizado '+erUpdated.toLocaleTimeString('pt-BR');
 }
 async function erRunProxyFetch(){
-  erSetLoadUI(true,'Fase 1/2 — cotações…');
-  let qmap={};
+  erSetLoadUI(true,'Fase 1/2 — cotações…');let qmap={};
   try{const qs=await erFetchBatchQuote(erList.map(e=>e.symbol));qs.forEach(q=>qmap[q.symbol]=erProcessQuote(q));}catch(_){}
-  erRows=erList.map(e=>({...e,...(qmap[e.symbol]||{}),loading:true,week:null,month:null,threeMonth:null,ytd:null,oneYear:null,vol30:null,maxDD:null}));
-  erRender();
+  erRows=erList.map(e=>({...e,...(qmap[e.symbol]||{}),loading:true,week:null,month:null,threeMonth:null,ytd:null,oneYear:null,vol30:null,maxDD:null}));erRender();
   const B=5;
   for(let i=0;i<erList.length;i+=B){
-    const batch=erList.slice(i,i+B);
-    const settled=await Promise.allSettled(batch.map(m=>erFetchChart(m.symbol)));
-    settled.forEach((res,j)=>{
-      const m=batch[j],row=erRows.find(r=>r.symbol===m.symbol);if(!row)return;
+    const batch=erList.slice(i,i+B),settled=await Promise.allSettled(batch.map(m=>erFetchChart(m.symbol)));
+    settled.forEach((res,j)=>{const m=batch[j],row=erRows.find(r=>r.symbol===m.symbol);if(!row)return;
       if(res.status==='fulfilled'){try{const h=erProcessChart(res.value);Object.assign(row,h);if(row.price==null){const cs=(res.value.indicators.adjclose?.[0]?.adjclose||res.value.indicators.quote[0].close).filter(c=>c!=null&&isFinite(c));if(cs.length)row.price=parseFloat(cs[cs.length-1].toFixed(2));}}catch{erErrors.push(m.symbol);}}
-      else{erErrors.push(m.symbol);}
-      row.loading=false;
-    });
+      else{erErrors.push(m.symbol);}row.loading=false;});
     erPct=Math.round((Math.min(i+B,erList.length)/erList.length)*100);
-    erSetLoadUI(true,`Fase 2/2 — histórico: ${Math.round(erPct*erList.length/100)}/${erList.length} (${erActiveProxy.name})`);
+    erSetLoadUI(true,'Fase 2/2 — '+Math.round(erPct*erList.length/100)+'/'+erList.length+' ('+erActiveProxy.name+')');
     erRender();if(i+B<erList.length)await erSleep(380);
   }
   erRows.forEach(r=>r.loading=false);
 }
 async function erRunAIFetch(){
-  erRows=erList.map(e=>({...e,loading:true}));erRender();
-  const B=5;
+  erRows=erList.map(e=>({...e,loading:true}));erRender();const B=5;
   for(let i=0;i<erList.length;i+=B){
     const batch=erList.slice(i,i+B);erPct=Math.round((i/erList.length)*100);
-    erSetLoadUI(true,`IA: ${batch.map(m=>m.symbol).join(', ')}…`);
-    try{
-      const data=await erFetchViaAI(batch.map(m=>m.symbol));
-      batch.forEach(m=>{const d=data.find(x=>x&&x.symbol===m.symbol);const row=erRows.find(r=>r.symbol===m.symbol);if(!row)return;
-        if(d)Object.assign(row,{price:d.price??null,day:d.day??null,week:d.week??null,month:d.month??null,threeMonth:null,ytd:d.ytd??null,oneYear:d.oneYear??null,vol30:null,maxDD:null,vol3m:null,aum:null,liqLabel:'–',liqColor:'#484f58'});
-        else erErrors.push(m.symbol);row.loading=false;});
-    }catch{batch.forEach(m=>{const r=erRows.find(x=>x.symbol===m.symbol);if(r)r.loading=false;erErrors.push(m.symbol);});}
+    erSetLoadUI(true,'IA: '+batch.map(m=>m.symbol).join(', ')+'…');
+    try{const data=await erFetchViaAI(batch.map(m=>m.symbol));batch.forEach(m=>{const d=data.find(x=>x&&x.symbol===m.symbol);const row=erRows.find(r=>r.symbol===m.symbol);if(!row)return;if(d)Object.assign(row,{price:d.price??null,day:d.day??null,week:d.week??null,month:d.month??null,threeMonth:null,ytd:d.ytd??null,oneYear:d.oneYear??null,vol30:null,maxDD:null,vol3m:null,aum:null,liqLabel:'–',liqColor:'#484f58'});else erErrors.push(m.symbol);row.loading=false;});}
+    catch{batch.forEach(m=>{const r=erRows.find(x=>x.symbol===m.symbol);if(r)r.loading=false;erErrors.push(m.symbol);});}
     erRender();if(i+B<erList.length)await erSleep(300);
   }
 }
-
 async function erAddTicker(){
-  const input=document.getElementById('er-add-input');const sym=input.value.toUpperCase().trim();if(!sym)return;
-  if(erList.find(e=>e.symbol===sym)){toast(sym+' já está na lista');input.value='';return;}
-  input.value='';if(!ER_CATS['Custom'])ER_CATS['Custom']={color:'#adb5bd'};
+  const inp=document.getElementById('er-add-input');const sym=(inp.value||'').toUpperCase().trim();if(!sym)return;
+  if(erList.find(e=>e.symbol===sym)){toast(sym+' já está na lista');inp.value='';return;}
+  inp.value='';if(!ER_CATS['Custom'])ER_CATS['Custom']={color:'#adb5bd'};
   const entry={symbol:sym,name:sym,cat:'Custom'};erList.push(entry);erRows.push({...entry,loading:true});erRender();toast('Adicionando '+sym+'…');
-  try{
-    if(erMode==='proxy'){const qs=await erFetchBatchQuote([sym]);if(qs.length)Object.assign(erRows.find(x=>x.symbol===sym)||{},erProcessQuote(qs[0]));const raw=await erFetchChart(sym);const h=erProcessChart(raw);const r=erRows.find(x=>x.symbol===sym);if(r){Object.assign(r,h);r.loading=false;}}
-    else if(erMode==='ai'){const data=await erFetchViaAI([sym]);const d=data.find(x=>x&&x.symbol===sym);const r=erRows.find(x=>x.symbol===sym);if(r&&d)Object.assign(r,{price:d.price??null,day:d.day??null,week:d.week??null,month:d.month??null,ytd:d.ytd??null,oneYear:d.oneYear??null});if(r)r.loading=false;}
-  }catch{const r=erRows.find(x=>x.symbol===sym);if(r)r.loading=false;erErrors.push(sym);}
+  try{if(erMode==='proxy'){const qs=await erFetchBatchQuote([sym]);if(qs.length)Object.assign(erRows.find(x=>x.symbol===sym)||{},erProcessQuote(qs[0]));const raw=await erFetchChart(sym);const h=erProcessChart(raw);const r=erRows.find(x=>x.symbol===sym);if(r){Object.assign(r,h);r.loading=false;}}
+  else if(erMode==='ai'){const data=await erFetchViaAI([sym]);const d=data.find(x=>x&&x.symbol===sym);const r=erRows.find(x=>x.symbol===sym);if(r&&d)Object.assign(r,{price:d.price??null,day:d.day??null,week:d.week??null,month:d.month??null,ytd:d.ytd??null,oneYear:d.oneYear??null});if(r)r.loading=false;}}
+  catch{const r=erRows.find(x=>x.symbol===sym);if(r)r.loading=false;erErrors.push(sym);}
   erRender();toast(sym+' adicionado!');
 }
-
 function erSetBadge(t,c){const el=document.getElementById('er-badge');if(!el)return;el.textContent=t;if(c){el.style.color=c;el.style.borderColor=c+'55';el.style.background=c+'18';}}
 function erSetLoadUI(on,msg){const btn=document.getElementById('er-btn');if(!btn)return;btn.disabled=on;const pw=document.getElementById('er-prog');if(pw)pw.style.display=on?'block':'none';if(on){if(msg){const l=document.getElementById('er-plbl');if(l)l.textContent=msg;}const f=document.getElementById('er-pfill');if(f)f.style.width=erPct+'%';btn.innerHTML='<i class="ti ti-refresh"></i> '+erPct+'%…';}else{btn.innerHTML='<i class="ti ti-refresh"></i> Atualizar';}}
-
 function erGetDisplayed(){const f=erFilterCat==='Todos'?erRows:erRows.filter(r=>r.cat===erFilterCat);return[...f].sort((a,b)=>{if(erSortBy==='symbol'||erSortBy==='cat'){const as=String(a[erSortBy]??''),bs=String(b[erSortBy]??'');return erSortDir==='asc'?as.localeCompare(bs):bs.localeCompare(as);}const av=a[erSortBy]??-Infinity,bv=b[erSortBy]??-Infinity;return erSortDir==='desc'?bv-av:av-bv;});}
 function erHandleSort(k){if(erSortBy===k)erSortDir=erSortDir==='desc'?'asc':'desc';else{erSortBy=k;erSortDir='desc';}erRender();}
 function erQuickSort(k){erHandleSort(k);}
 function erFilterBy(cat){erFilterCat=cat;erRender();}
-
-function erPctTd(v,k){if(v==null||!isFinite(v))return`<td style="text-align:right;font-family:monospace;font-size:12px;color:var(--text2)">–</td>`;const a=Math.abs(v),cls=v>0?'pos':'neg',fw=a>100?'font-weight:800':a>30?'font-weight:700':'';const bg=erSortBy===k?'background:rgba(255,255,255,.02)':'';return`<td class="${cls}" style="text-align:right;font-family:monospace;font-size:12px;${fw};${bg}">${v>0?'+':''}${v.toFixed(1)}%</td>`;}
-
+function erPctTd(v,k){if(v==null||!isFinite(v))return'<td style="text-align:right;font-family:monospace;font-size:12px;color:var(--text2)">–</td>';const a=Math.abs(v),cls=v>0?'pos':'neg',fw=a>100?'font-weight:800':a>30?'font-weight:700':'',bg=erSortBy===k?'background:rgba(255,255,255,.02)':'';return'<td class="'+cls+'" style="text-align:right;font-family:monospace;font-size:12px;'+fw+';'+bg+'">'+(v>0?'+':'')+v.toFixed(1)+'%</td>';}
 function erRender(){erBuildCats();erBuildThead();const d=erGetDisplayed();erBuildTbody(d);erBuildStats(d);erUpdateChips();}
-
-function erBuildCats(){const el=document.getElementById('er-cats');if(!el)return;const cats=['Todos',...ER_CAT_ORDER,...(erRows.some(r=>r.cat==='Custom')?['Custom']:[])];el.innerHTML=cats.map(c=>{const m=ER_CATS[c]||{color:'#adb5bd'};const active=erFilterCat===c;return`<button style="padding:3px 10px;font-size:10px;font-weight:700;border-radius:999px;border:1px solid ${m.color};color:${m.color};background:${active?m.color+'22':'transparent'};cursor:pointer;opacity:${active?1:.55};transition:all .15s" onclick="erFilterBy('${c}')">${c}</button>`;}).join('');}
-
-function erBuildThead(){const el=document.getElementById('er-thead');if(!el)return;el.innerHTML=ER_COLS.map(c=>{const active=erSortBy===c.k,arrow=active?(erSortDir==='desc'?' ▼':' ▲'):' ⇅';return`<th class="${active?'er-active':''}" style="${c.r?'text-align:right;':''}min-width:${c.w}px;cursor:pointer;user-select:none;" onclick="erHandleSort('${c.k}')">${c.lbl}<span style="color:${active?'var(--acc2)':'var(--border)'};margin-left:2px;font-size:8px">${arrow}</span></th>`;}).join('');}
-
+function erBuildCats(){const el=document.getElementById('er-cats');if(!el)return;const cats=['Todos',...ER_CAT_ORDER,...(erRows.some(r=>r.cat==='Custom')?['Custom']:[])];el.innerHTML=cats.map(c=>{const m=ER_CATS[c]||{color:'#adb5bd'};const a=erFilterCat===c;return'<button style="padding:3px 10px;font-size:10px;font-weight:700;border-radius:999px;border:1px solid '+m.color+';color:'+m.color+';background:'+(a?m.color+'22':'transparent')+';cursor:pointer;opacity:'+(a?1:.55)+'" onclick="erFilterBy(\''+c+'\')">'+c+'</button>';}).join('');}
+function erBuildThead(){const el=document.getElementById('er-thead');if(!el)return;el.innerHTML=ER_COLS.map(c=>{const active=erSortBy===c.k,arrow=active?(erSortDir==='desc'?' ▼':' ▲'):' ⇅';return'<th style="'+(c.r?'text-align:right;':'')+'min-width:'+c.w+'px;cursor:pointer;user-select:none;'+(active?'color:var(--acc2)':'')+'" onclick="erHandleSort(\''+c.k+'\')">'+c.lbl+'<span style="color:'+(active?'var(--acc2)':'var(--border)')+';margin-left:2px;font-size:8px">'+arrow+'</span></th>';}).join('');}
 function erBuildTbody(rows){
   const el=document.getElementById('er-tbody');if(!el)return;
-  if(!rows.length){el.innerHTML=`<tr><td colspan="${ER_COLS.length}" style="text-align:center;padding:40px;color:var(--text2)">Nenhum ETF — clique em Atualizar.</td></tr>`;return;}
+  if(!rows.length){el.innerHTML='<tr><td colspan="'+ER_COLS.length+'" style="text-align:center;padding:40px;color:var(--text2)">Nenhum ETF — clique em Atualizar.</td></tr>';return;}
   const SK='<span class="er-sk" style="width:42px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>';
-  el.innerHTML=rows.map(r=>{
-    const cm=ER_CATS[r.cat]||{color:'#adb5bd'};const ld=r.loading;
-    const vC=r.vol30>40?'var(--red)':r.vol30>20?'var(--amber)':'var(--text2)';
-    const mC=r.maxDD<-40?'#ff3333':r.maxDD<-20?'var(--red)':'#f87171';
-    return`<tr>
-      <td><span class="ticker-sym">${r.symbol}</span><div style="font-size:9px;color:var(--text2);margin-top:1px;max-width:135px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.name}">${r.name}</div></td>
-      <td><span class="er-chip" style="color:${cm.color};border-color:${cm.color}55;background:${cm.color}18">${r.cat}</span></td>
-      <td style="text-align:right;font-family:monospace;font-size:12px">${r.price!=null?'$'+r.price.toFixed(2):ld?SK:'–'}</td>
-      ${ER_PKEYS.map(k=>ld?`<td style="text-align:right;font-size:12px;color:var(--text2)">${SK}</td>`:erPctTd(r[k],k)).join('')}
-      <td style="text-align:right;font-family:monospace;font-size:12px;color:${r.vol30!=null?vC:'var(--text2)'}">${r.vol30!=null?r.vol30+'%':ld?SK:'–'}</td>
-      <td style="text-align:right;font-family:monospace;font-size:12px;color:${r.maxDD!=null?mC:'var(--text2)'}">${r.maxDD!=null?r.maxDD+'%':ld?SK:'–'}</td>
-      <td>${r.liqLabel&&r.liqLabel!=='–'?`<span class="er-liq" style="color:${r.liqColor};border-color:${r.liqColor}55;background:${r.liqColor}18">● ${r.liqLabel}</span>`:ld?SK:'<span style="color:var(--text2)">–</span>'}</td>
-      <td style="text-align:right;font-family:monospace;font-size:12px;color:var(--text2)">${r.aum!=null?erFmtAum(r.aum):ld?SK:'–'}</td>
-      <td style="text-align:right;font-family:monospace;font-size:12px;color:var(--text2)">${r.vol3m!=null?erFmtVol(r.vol3m):ld?SK:'–'}</td>
-    </tr>`;
+  el.innerHTML=rows.map(r=>{const cm=ER_CATS[r.cat]||{color:'#adb5bd'},ld=r.loading,vC=r.vol30>40?'var(--red)':r.vol30>20?'var(--amber)':'var(--text2)',mC=r.maxDD<-40?'#ff3333':r.maxDD<-20?'var(--red)':'#f87171';
+    return'<tr><td><span class="ticker-sym">'+r.symbol+'</span><div style="font-size:9px;color:var(--text2);margin-top:1px;max-width:135px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.name+'</div></td>'
+      +'<td><span class="er-chip" style="color:'+cm.color+';border-color:'+cm.color+'55;background:'+cm.color+'18">'+r.cat+'</span></td>'
+      +'<td style="text-align:right;font-family:monospace;font-size:12px">'+(r.price!=null?'$'+r.price.toFixed(2):ld?SK:'–')+'</td>'
+      +ER_PKEYS.map(k=>ld?'<td style="text-align:right;font-size:12px;color:var(--text2)">'+SK+'</td>':erPctTd(r[k],k)).join('')
+      +'<td style="text-align:right;font-family:monospace;font-size:12px;color:'+(r.vol30!=null?vC:'var(--text2)')+'">'+( r.vol30!=null?r.vol30+'%':ld?SK:'–')+'</td>'
+      +'<td style="text-align:right;font-family:monospace;font-size:12px;color:'+(r.maxDD!=null?mC:'var(--text2)')+'">'+( r.maxDD!=null?r.maxDD+'%':ld?SK:'–')+'</td>'
+      +'<td>'+(r.liqLabel&&r.liqLabel!=='–'?'<span class="er-liq" style="color:'+r.liqColor+';border-color:'+r.liqColor+'55;background:'+r.liqColor+'18">● '+r.liqLabel+'</span>':ld?SK:'<span style="color:var(--text2)">–</span>')+'</td>'
+      +'<td style="text-align:right;font-family:monospace;font-size:12px;color:var(--text2)">'+(r.aum!=null?erFmtAum(r.aum):ld?SK:'–')+'</td>'
+      +'<td style="text-align:right;font-family:monospace;font-size:12px;color:var(--text2)">'+(r.vol3m!=null?erFmtVol(r.vol3m):ld?SK:'–')+'</td></tr>';
   }).join('');
 }
-
-function erBuildStats(rows){const el=document.getElementById('er-stats');if(!el)return;const up=rows.filter(r=>r.day>0).length,dn=rows.filter(r=>r.day<0).length;const ms=erMode==='ai'?'<span style="color:#bc8cff">🤖 Modo IA</span>':'<span style="color:var(--green)">📡 Yahoo Finance</span>';const er=erErrors.length?`<span class="neg">⚠ ${erErrors.length} falha(s)</span>`:'';el.innerHTML=`${ms} · <span class="pos">▲ ${up} em alta</span> · <span class="neg">▼ ${dn} em baixa</span> · ${rows.length} ETFs ${er}`;}
-
+function erBuildStats(rows){const el=document.getElementById('er-stats');if(!el)return;const up=rows.filter(r=>r.day>0).length,dn=rows.filter(r=>r.day<0).length;const ms=erMode==='ai'?'<span style="color:#bc8cff">🤖 Modo IA</span>':'<span style="color:var(--green)">📡 Yahoo Finance</span>';const er=erErrors.length?'<span class="neg">⚠ '+erErrors.length+' falha(s)</span>':'';el.innerHTML=ms+' · <span class="pos">▲ '+up+' em alta</span> · <span class="neg">▼ '+dn+' em baixa</span> · '+rows.length+' ETFs '+er;}
 function erUpdateChips(){document.querySelectorAll('[onclick*="erQuickSort"]').forEach(b=>{const k=b.getAttribute('onclick').replace(/erQuickSort\('|'\)/g,'');b.classList.toggle('active',k===erSortBy);});}
-
 function erInit(){
   if(!erCdTimer){erCdTimer=setInterval(()=>{if(erLoading)return;erCd--;if(erCd<=0){erDoFetch();return;}const el=document.getElementById('er-cd');if(el)el.textContent=String(Math.floor(erCd/60)).padStart(2,'0')+':'+String(erCd%60).padStart(2,'0');},1000);}
-  if(!erUpdated||(Date.now()-erUpdated.getTime()>5*60*1000)){erBuildThead();erDoFetch();}
-  else erRender();
+  if(!erUpdated||(Date.now()-erUpdated.getTime()>5*60*1000)){erBuildThead();erDoFetch();}else erRender();
 }
+// ═══════════════════════════════════════════════════════════
+// FIM ETF RADAR
+// ═══════════════════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════
-// END ETF RADAR MODULE
-// ═══════════════════════════════════════════════════════════
+load();
+renderAll();
+const savedKey=localStorage.getItem('it_apikey')||'';
+const keyField=document.getElementById('cfg-apikey');
+if(savedKey&&keyField)keyField.value=savedKey;
 </script>
 </body>
 </html>
